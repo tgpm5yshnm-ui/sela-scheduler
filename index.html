@@ -85,6 +85,7 @@ table.status tfoot td.day{background:var(--surface3)}
 .cap.part{background:var(--ok-bg); color:var(--ok)}
 .cap.over{background:var(--danger-bg); color:var(--danger)}
 .cap.empty{background:var(--surface3); color:var(--muted)}
+.cap.low{background:var(--accent); color:#fff; opacity:.9}
 .legend{display:flex; gap:14px; flex-wrap:wrap; margin-top:12px; font-size:12px; color:var(--muted)}
 .legend span{display:inline-flex; align-items:center; gap:6px}
 .legend i{width:12px; height:12px; border-radius:4px; display:inline-block}
@@ -123,6 +124,8 @@ label.f input,label.f select{font-family:inherit; font-size:14px; color:var(--in
 .cap-item .lab small{display:block; color:var(--muted); font-weight:400; font-size:11px}
 .cap-item.grn{border-color:var(--ok); background:var(--ok-bg)}
 .cap-item.pix{border-color:var(--violet); background:var(--violet-bg)}
+.cap-item.glob{border-color:var(--accent); background:var(--surface2); border-width:1.5px}
+.cap-item.glob .lab{font-weight:700}
 .cap-item .stepper{display:inline-flex; align-items:center; border:1px solid var(--line); border-radius:9px; overflow:hidden; background:var(--surface)}
 .cap-item .step{width:34px; height:34px; border:0; background:var(--surface2); color:var(--ink); font-size:19px; line-height:1; font-weight:600; display:flex; align-items:center; justify-content:center; transition:background .12s,color .12s}
 .cap-item .step:hover{background:var(--accent); color:#fff}
@@ -189,9 +192,17 @@ label.f input,label.f select{font-family:inherit; font-size:14px; color:var(--in
   <details class="ctl">
     <summary>⚙️ קיבולת יומית לפי תבנית <span class="chev">▾</span></summary>
     <div class="body">
+      <div class="cap-item glob" style="margin-bottom:14px">
+        <div class="lab">תקרה יומית כוללת<small>מקסימום יציקות ליום, כל התבניות יחד</small></div>
+        <div class="stepper">
+          <button type="button" class="step" id="dcDec" aria-label="הפחת תקרה יומית">−</button>
+          <input class="step-val" type="number" min="1" id="dayCapInput" aria-label="תקרה יומית כוללת">
+          <button type="button" class="step" id="dcInc" aria-label="הוסף תקרה יומית">+</button>
+        </div>
+      </div>
       <div class="cap-grid" id="capGrid"></div>
       <div class="note">
-        ימי ייצור: ראשון–חמישי (שישי–שבת אינם ימי ייצור; חגים — יתווספו).<br>
+        ימי ייצור: ראשון–חמישי (שישי–שבת אינם ימי ייצור; חגים — יתווספו). יעד יומי: 30–36.<br>
         פיקס וגרין גבוה קיימים לקטרים 100 ו‑125 בלבד. שוחת 150 משובצת תמיד במסלול 150 הרגיל.
       </div>
       <div style="margin-top:12px"><button class="btn ghost" id="resetBtn">איפוס לנתוני הדמו</button></div>
@@ -225,6 +236,10 @@ const TRACKS = {
 };
 const TRACK_ORDER=['d100','p100','g100','d125','p125','g125','d150'];
 let CAP={}; TRACK_ORDER.forEach(t=>CAP[t]=TRACKS[t].cap);
+/* תקרה יומית כוללת על כל התבניות יחד (מגבלת המפעל), ויעד יומי מינימלי */
+let DAY_CAP=36; const DAY_MIN=30;
+/* קדימות שיבוץ: קודם התבניות המיוחדות (צווארי הבקבוק), אז מסלולי הקוטר */
+const TRACK_PRIO={p100:0,p125:0,g100:0,g125:0,d100:1,d125:1,d150:1};
 
 function productionDays(){ let d=new Date(TODAY); do{ d=addD(d,1); } while(d.getDay()!==0); const a=[]; for(let i=0;i<5;i++) a.push(addD(d,i)); return a; }
 let DAYS = productionDays();
@@ -260,49 +275,57 @@ let ORDERS = mockOrders();
 
 function schedule(){
   const load = DAYS.map(()=>{const o={}; TRACK_ORDER.forEach(t=>o[t]=0); return o;});
+  const daySum = DAYS.map(()=>0);
   const appr = ORDERS.filter(o=>o.status==='approved');
+  appr.forEach(o=>{ o._tr=routeOf(o); });
+  // קדימות: תבניות מיוחדות קודם; העודף נדחק למסלולי הקוטר הגמישים
+  const order=[...appr].sort((a,b)=> TRACK_PRIO[a._tr]-TRACK_PRIO[b._tr]);
   let overflow=0;
-  appr.forEach(o=>{
-    const tr=routeOf(o); o._tr=tr;
-    let qty=o.qty; const placed=[];
+  order.forEach(o=>{
+    const tr=o._tr; let qty=o.qty; const placed=[];
     for(let i=0;i<DAYS.length && qty>0;i++){
-      const free=CAP[tr]-load[i][tr];
-      if(free>0){ const take=Math.min(free,qty); load[i][tr]+=take; qty-=take; placed.push({i,take}); }
+      const trackFree = CAP[tr]-load[i][tr];
+      const dayFree = DAY_CAP-daySum[i];
+      const free=Math.min(trackFree, dayFree);
+      if(free>0){ const take=Math.min(free,qty); load[i][tr]+=take; daySum[i]+=take; qty-=take; placed.push({i,take}); }
     }
     o._placed=placed; o._overflow=qty; overflow+=qty;
   });
-  return {load, appr, overflow};
+  return {load, daySum, appr, overflow};
 }
 
 function render(){
   const S=schedule();
   document.getElementById('weekRange').textContent = `(${DN[DAYS[0].getDay()]} ${fmtShort(DAYS[0])} – ${DN[DAYS[4].getDay()]} ${fmtShort(DAYS[4])})`;
 
-  const dayTot=S.load.map(l=>TRACK_ORDER.reduce((s,t)=>s+l[t],0));
+  const dayTot=S.daySum;
   const trackTot={}; TRACK_ORDER.forEach(t=>trackTot[t]=S.load.reduce((s,l)=>s+l[t],0));
   const grand=TRACK_ORDER.reduce((s,t)=>s+trackTot[t],0);
-  const weeklyCap=TRACK_ORDER.reduce((s,t)=>s+CAP[t],0)*DAYS.length;
+  const weeklyCap=DAY_CAP*DAYS.length;
   const util=weeklyCap? Math.round(grand/weeklyCap*100):0;
 
   document.getElementById('kpis').innerHTML=[
     kpi(S.appr.length,'הזמנות מאושרות',''),
     kpi(grand,'סה״כ יציקות בתוכנית','mut'),
-    kpi(DAYS.length,'ימי ייצור','mut'),
-    kpi(util+'%','ניצול קיבולת', util>=100?'good':'mut'),
+    kpi(DAY_CAP,'תקרה יומית כוללת','mut'),
+    kpi(util+'%','ניצול מול תקרה', util>=100?'good':'mut'),
   ].join('');
 
   const capCell=(used,cap)=>{ let cls='part'; if(used===0)cls='empty'; else if(used>cap)cls='over'; else if(used>=cap)cls='full';
     const sub=cls==='full'?'מלא':cls==='over'?'חריגה':cls==='empty'?'—':'פנוי '+(cap-used);
     return `<td><span class="cap ${cls}"><span class="big">${used}/${cap}</span><span class="sub">${sub}</span></span></td>`; };
-  const head=`<thead><tr><th class="day">יום ותאריך</th>${TRACK_ORDER.map(t=>`<th class="${TRACKS[t].cls==='green'?'grn':TRACKS[t].cls==='pix'?'pix':''}">${TRACKS[t].short}</th>`).join('')}<th class="tot">סה״כ</th></tr></thead>`;
-  const rows=DAYS.map((d,i)=>`<tr><td class="day">${DN[d.getDay()]}<small>${fmtShort(d)}</small></td>${TRACK_ORDER.map(t=>capCell(S.load[i][t],CAP[t])).join('')}<td class="tot num">${dayTot[i]}</td></tr>`).join('');
-  const foot=`<tfoot><tr><td class="day">סה״כ שבועי</td>${TRACK_ORDER.map(t=>`<td class="num">${trackTot[t]}/${CAP[t]*DAYS.length}</td>`).join('')}<td class="num">${grand}</td></tr></tfoot>`;
+  const totCell=(total)=>{ let cls='part'; if(total>=DAY_CAP)cls='full'; else if(total>DAY_CAP)cls='over'; else if(total<DAY_MIN)cls='low';
+    const sub=cls==='full'?'תקרה':cls==='low'?'מתחת ליעד':'בטווח';
+    return `<td class="tot"><span class="cap ${cls}"><span class="big">${total}/${DAY_CAP}</span><span class="sub">${sub}</span></span></td>`; };
+  const head=`<thead><tr><th class="day">יום ותאריך</th>${TRACK_ORDER.map(t=>`<th class="${TRACKS[t].cls==='green'?'grn':TRACKS[t].cls==='pix'?'pix':''}">${TRACKS[t].short}</th>`).join('')}<th class="tot">סה״כ / תקרה</th></tr></thead>`;
+  const rows=DAYS.map((d,i)=>`<tr><td class="day">${DN[d.getDay()]}<small>${fmtShort(d)}</small></td>${TRACK_ORDER.map(t=>capCell(S.load[i][t],CAP[t])).join('')}${totCell(dayTot[i])}</tr>`).join('');
+  const foot=`<tfoot><tr><td class="day">סה״כ שבועי</td>${TRACK_ORDER.map(t=>`<td class="num">${trackTot[t]}/${CAP[t]*DAYS.length}</td>`).join('')}<td class="num">${grand}/${weeklyCap}</td></tr></tfoot>`;
   document.getElementById('statusTbl').innerHTML=head+'<tbody>'+rows+'</tbody>'+foot;
 
-  const fullTracks=TRACK_ORDER.filter(t=> DAYS.every((_,i)=>S.load[i][t]>=CAP[t]));
-  let note = fullTracks.length? `תבניות מלאות לשבוע: ${fullTracks.map(t=>TRACKS[t].name).join(', ')}. ` : '';
-  note += 'תבניות הפיקס והגרין גבוה מוגבלות ל‑2 יציקות/יום כל אחת — צוואר בקבוק פוטנציאלי. ';
-  if(S.overflow>0) note += `⚠️ ${S.overflow} יציקות חרגו מהקיבולת השבועית וידחו לשבוע הבא.`;
+  const belowMin=DAYS.map((_,i)=>dayTot[i]).filter(v=>v<DAY_MIN).length;
+  let note = `תקרה יומית כוללת ${DAY_CAP} יציקות (סכום קיבולות התבניות הוא ${TRACK_ORDER.reduce((s,t)=>s+CAP[t],0)}, כך שאי אפשר להריץ את כולן במקסימום יחד). קדימות: תבניות מיוחדות קודם, מסלולי הקוטר סופגים את העודף. `;
+  if(belowMin) note += `${belowMin} ימים מתחת ליעד ${DAY_MIN}. `;
+  if(S.overflow>0) note += `⚠️ ${S.overflow} יציקות חרגו מהקיבולת השבועית (${weeklyCap}) ויידחו לשבוע הבא.`;
   document.getElementById('statusNote').innerHTML=note;
 
   // per-order allocation
@@ -340,6 +363,13 @@ function renderCaps(){
     render();
   }));
 }
+function syncDayCap(){ const el=document.getElementById('dayCapInput'); if(el) el.value=DAY_CAP; }
+(function wireDayCap(){
+  const el=document.getElementById('dayCapInput');
+  el.addEventListener('change',e=>{const v=parseInt(e.target.value,10); if(v>0){DAY_CAP=v; render();} else {e.target.value=DAY_CAP;}});
+  document.getElementById('dcInc').addEventListener('click',()=>{DAY_CAP+=1; syncDayCap(); render();});
+  document.getElementById('dcDec').addEventListener('click',()=>{DAY_CAP=Math.max(1,DAY_CAP-1); syncDayCap(); render();});
+})();
 document.getElementById('addBtn').addEventListener('click',()=>{
   const cust=(document.getElementById('f_cust').value||'לקוח חדש').trim();
   const dia=parseInt(document.getElementById('f_dia').value,10);
@@ -349,13 +379,13 @@ document.getElementById('addBtn').addEventListener('click',()=>{
   ORDERS.push({id:'SO2600'+(7024+ORDERS.length-23),customer:cust,diameter:dia,bottomH:bh,hasPix:pix,qty,status:'approved'});
   render(); document.getElementById('f_cust').value='';
 });
-document.getElementById('resetBtn').addEventListener('click',()=>{ CAP={}; TRACK_ORDER.forEach(t=>CAP[t]=TRACKS[t].cap); ORDERS=mockOrders(); renderCaps(); render(); });
+document.getElementById('resetBtn').addEventListener('click',()=>{ CAP={}; TRACK_ORDER.forEach(t=>CAP[t]=TRACKS[t].cap); DAY_CAP=36; ORDERS=mockOrders(); renderCaps(); syncDayCap(); render(); });
 document.getElementById('themeBtn').addEventListener('click',()=>{
   const cur=document.documentElement.getAttribute('data-theme');
   const dark=cur? cur==='dark' : matchMedia('(prefers-color-scheme:dark)').matches;
   document.documentElement.setAttribute('data-theme', dark?'light':'dark');
 });
-renderCaps(); render();
+renderCaps(); syncDayCap(); render();
 </script>
 </body>
 </html>

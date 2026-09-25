@@ -63,6 +63,27 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .pk .bar i{display:block; height:100%; background:var(--muted)}
 .pk.s-prod .bar i{background:var(--amber)} .pk.s-ready .bar i{background:var(--accent)} .pk.s-ship .bar i{background:var(--ok)}
 
+.master-controls{display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:12px}
+.master-controls .sw{position:relative; flex:1 1 240px; min-width:0}
+.master-controls .sw .ic{position:absolute; inset-inline-start:11px; top:50%; transform:translateY(-50%); font-size:13px; opacity:.55; pointer-events:none}
+.master-controls .sw input{width:100%; font-family:inherit; font-size:14px; color:var(--ink); background:var(--surface2); border:1px solid var(--line); border-radius:9px; padding:9px 34px 9px 12px}
+.master-controls .sw input:focus{outline:2px solid var(--accent); outline-offset:1px; background:var(--surface)}
+.fsel{font-family:inherit; font-size:13px; color:var(--ink); background:var(--surface2); border:1px solid var(--line); border-radius:9px; padding:8px 10px; max-width:170px}
+.fsel:focus{outline:2px solid var(--accent); outline-offset:1px}
+table.master{border-collapse:collapse; width:100%; min-width:900px; font-size:12.5px; font-variant-numeric:tabular-nums}
+table.master th,table.master td{padding:7px 9px; text-align:right; border-bottom:1px solid var(--line2); white-space:nowrap}
+table.master thead th{color:var(--muted); font-weight:600; font-size:11.5px; background:var(--surface2); position:sticky; top:0; z-index:2}
+table.master tbody tr:hover{background:var(--surface2)}
+table.master td.sim{font-weight:700}
+table.master td.sim mark{background:var(--amber-bg); color:var(--amber); border-radius:3px; padding:0 1px}
+table.master tr.hit td{background:var(--amber-bg)} table.master tr.hit:hover td{background:var(--amber-bg)}
+.mchk{width:24px; height:24px; border:1.5px solid var(--line); border-radius:6px; background:var(--surface); color:transparent; font-size:14px; font-weight:800; line-height:1; display:inline-flex; align-items:center; justify-content:center}
+.mchk:hover{border-color:var(--ok)} .mchk.on{background:var(--ok); border-color:var(--ok); color:#fff}
+.stpill{font-size:11px; font-weight:600; padding:2px 8px; border-radius:999px; background:var(--surface3); color:var(--muted)}
+.stpill.s1{background:var(--amber-bg); color:var(--amber)} .stpill.s2{background:var(--accent); color:#fff} .stpill.s3{background:var(--ok-bg); color:var(--ok)}
+.dtag{font-size:11.5px; font-variant-numeric:tabular-nums} .dtag.late{color:var(--danger); font-weight:700} .dtag.warn{color:var(--amber); font-weight:600}
+.mtrk{font-size:11px; font-weight:600; padding:2px 7px; border-radius:6px; background:var(--surface3); color:var(--accent-ink)}
+.mtrk.green{background:var(--ok-bg); color:var(--ok)} .mtrk.pix{background:var(--violet-bg); color:var(--violet)}
 section.block{background:var(--surface); border:1px solid var(--line); border-radius:14px; margin-bottom:18px; overflow:hidden; box-shadow:var(--shadow)}
 .block > h2{font-size:15px; font-weight:600; margin:0; padding:14px 16px; border-bottom:1px solid var(--line2); display:flex; align-items:center; gap:9px; flex-wrap:wrap}
 .block > h2 .rng{color:var(--muted); font-weight:400; font-size:13px}
@@ -193,6 +214,25 @@ details.ctl[open] summary .chev{transform:rotate(180deg)}
   <div class="pipe" id="pipe"></div>
 
   <section class="block">
+    <h2>📋 טבלת עבודה — כל השוחות במקום אחד<span class="count-pill" id="masterPill">0</span></h2>
+    <div class="body">
+      <div class="master-controls">
+        <div class="sw">
+          <span class="ic">🔎</span>
+          <input id="masterSearch" type="search" inputmode="search" placeholder="חיפוש לפי מס׳ שוחה סימול, הזמנה או לקוח…" aria-label="חיפוש">
+        </div>
+        <select id="fOrder" class="fsel" aria-label="סינון הזמנה"></select>
+        <select id="fDia" class="fsel" aria-label="סינון קוטר"><option value="">כל הקטרים</option><option value="100">קוטר 100</option><option value="125">קוטר 125</option><option value="150">קוטר 150</option></select>
+        <select id="fTrack" class="fsel" aria-label="סינון תבנית"></select>
+        <select id="fStatus" class="fsel" aria-label="סינון סטטוס"><option value="">כל הסטטוסים</option><option value="0">מתוכנן</option><option value="1">יוצר</option><option value="2">מוכן למשלוח</option><option value="3">נשלח ללקוח</option></select>
+        <button class="btn ghost" id="fClear">נקה סינון</button>
+      </div>
+      <div class="tbl-scroll"><table class="master" id="masterTbl"></table></div>
+      <div class="note" id="masterInfo"></div>
+    </div>
+  </section>
+
+  <section class="block">
     <h2>🗂️ לוח סטטוס ייצור<span class="count-pill" id="boardPill">0</span></h2>
     <div class="body">
       <div class="board-search">
@@ -286,11 +326,18 @@ const ORDER_DEFS=[
   ['SO26006915','עיריית מודיעין','CAM',100,'pix',6],['SO26006916','עיריית הרצליה','CAH',125,'pix',6],
   ['SO26006917','אשדוד תשתיות','ETC',100,'green',6],['SO26006918','דניה סיבוס','ELW',125,'green',6],
 ];
+function isBiz(d){const g=d.getDay();return g!==5&&g!==6;}
+function addBiz(d,n){let r=new Date(d),l=Math.abs(n),s=n<0?-1:1;while(l>0){r=addD(r,s);if(isBiz(r))l--;}return r;}
+function hashN(str){let h=7;for(let i=0;i<str.length;i++)h=(h*31+str.charCodeAt(i))>>>0;return h;}
+const MKT={100:'12100010',125:'12125008',150:'12150012'};
 function mockData(){
   const orders=[], shuchot=[];
   ORDER_DEFS.forEach(([so,cust,pfx,dia,kind,cnt])=>{
-    orders.push({so,customer:cust,contractor:pfx,diameter:dia,kind,count:cnt});
-    for(let i=1;i<=cnt;i++) shuchot.push({simul:pfx+'-'+(100+i),so,customer:cust,contractor:pfx,diameter:dia,pix:kind==='pix',bottomH:kind==='green'?90:60,kind});
+    const apprBack=2+(hashN(so)%9);                 // אישור תכנון: 2–10 ימי עסקים אחורה
+    const approval=addBiz(TODAY,-apprBack);
+    const delivery=addBiz(approval,14);             // נוהל: אספקה 14 ימי עסקים מאישור התכנון
+    orders.push({so,customer:cust,contractor:pfx,diameter:dia,kind,count:cnt,approval,delivery});
+    for(let i=1;i<=cnt;i++) shuchot.push({simul:pfx+'-'+(100+i),so,customer:cust,contractor:pfx,diameter:dia,pix:kind==='pix',bottomH:kind==='green'?90:60,kind,mkt:MKT[dia],approval,delivery});
   });
   return {orders,shuchot};
 }
@@ -308,6 +355,7 @@ function schedule(){
 
 /* סטטוס פר‑שוחה (0..3) + חותמת ייצור לחישוב ייבוש */
 let STAGE=loadJSON('sela_stage'), PAT=loadJSON('sela_pat'), boardFilter='all', boardSearch='', sheetDay=0;
+const MF={q:'',order:'',dia:'',track:'',status:''};
 function loadJSON(k){ try{const s=localStorage.getItem(k);return s?JSON.parse(s):{};}catch(e){return {};} }
 function save(){ try{localStorage.setItem('sela_stage',JSON.stringify(STAGE));localStorage.setItem('sela_pat',JSON.stringify(PAT));}catch(e){} }
 function stageOf(s){ return STAGE[s]||0; }
@@ -335,7 +383,7 @@ function seedIfEmpty(){
 function render(){
   const S=schedule();
   document.getElementById('weekRange').textContent=`(${DNS[DAYS[0].getDay()]}׳ ${fmtShort(DAYS[0])} – ${DNS[DAYS[4].getDay()]}׳ ${fmtShort(DAYS[4])})`;
-  renderPipe(); renderBoard(); renderSheet(); renderStatus(S);
+  renderPipe(); renderMaster(); renderBoard(); renderSheet(); renderStatus(S);
 }
 function kpiPipe(){ const c=[0,0,0,0]; SHUCHOT.forEach(s=>c[stageOf(s.simul)]++); return c; }
 function renderPipe(){
@@ -345,6 +393,47 @@ function renderPipe(){
 }
 function hl(text,q){ if(!q) return text; const i=text.toLowerCase().indexOf(q); if(i<0) return text;
   return text.slice(0,i)+'<mark>'+text.slice(i,i+q.length)+'</mark>'+text.slice(i+q.length); }
+
+function renderMaster(){
+  // populate filter dropdowns once
+  const of=document.getElementById('fOrder');
+  if(of && of.options.length<=1){ of.innerHTML='<option value="">כל ההזמנות</option>'+ORDERS.map(o=>`<option value="${o.so}">${o.so} · ${o.customer}</option>`).join(''); }
+  const tf=document.getElementById('fTrack');
+  if(tf && tf.options.length<=1){ tf.innerHTML='<option value="">כל התבניות</option>'+TRACK_ORDER.map(t=>`<option value="${t}">${TRACKS[t].name}</option>`).join(''); }
+
+  const q=MF.q.trim().toLowerCase();
+  const match=s=> (!q || s.simul.toLowerCase().includes(q) || s.so.toLowerCase().includes(q) || s.customer.toLowerCase().includes(q))
+    && (!MF.order || s.so===MF.order) && (!MF.dia || s.diameter===+MF.dia)
+    && (!MF.track || s._tr===MF.track) && (MF.status===''|| stageOf(s.simul)===+MF.status);
+  const rows=SHUCHOT.filter(match);
+  const stName=['מתוכנן','יוצר','מוכן למשלוח','נשלח'];
+  const th='<thead><tr><th>יוצר</th><th>מס׳ שוחה סימול</th><th>הזמנה</th><th>לקוח</th><th>קוטר</th><th>תבנית</th><th>תאריך יציקה</th><th>סטטוס</th><th>אישור תכנון</th><th>תאריך אספקה</th></tr></thead>';
+  const body=rows.map(s=>{
+    const st=stageOf(s.simul), on=st>=1, M=TRACKS[s._tr];
+    const cast = s._day!=null ? fmtShort(DAYS[s._day]) : '—';
+    const late = st<3 && s.delivery < TODAY, warn = st<3 && !late && s.delivery <= addD(TODAY,3);
+    const dcls = late?'late':warn?'warn':'';
+    const isHit=q && s.simul.toLowerCase().includes(q);
+    return `<tr class="${isHit?'hit':''}">
+      <td><button type="button" class="mchk ${on?'on':''}" data-simul="${s.simul}" aria-pressed="${on}" aria-label="סמן ${s.simul} כיוצר">✓</button></td>
+      <td class="sim">${hl(s.simul,q)}</td>
+      <td>${hl(s.so,q)}</td>
+      <td>${s.customer}</td>
+      <td>${s.diameter}</td>
+      <td><span class="mtrk ${M.cls}">${M.name}</span></td>
+      <td>${cast}</td>
+      <td><span class="stpill s${st}">${stName[st]}</span></td>
+      <td>${fmtShort(s.approval)}</td>
+      <td class="dtag ${dcls}">${fmtShort(s.delivery)}${late?' ⚠️':''}</td></tr>`;
+  }).join('');
+  document.getElementById('masterTbl').innerHTML=th+'<tbody>'+(body||'<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:16px">אין שוחות התואמות לסינון</td></tr>')+'</tbody>';
+  document.getElementById('masterPill').textContent=rows.length;
+  const anyF = q||MF.order||MF.dia||MF.track||MF.status!=='';
+  document.getElementById('masterInfo').innerHTML = anyF
+    ? `מוצגות <b>${rows.length}</b> מתוך ${SHUCHOT.length} שוחות (מסונן). ⚠️ = חריגה מתאריך אספקה.`
+    : `סה״כ ${SHUCHOT.length} שוחות. חפש או סנן כדי למקד. סימון ✓ מדווח שהשוחה יוצרה.`;
+}
+
 function renderBoard(){
   const c=kpiPipe();
   const q=boardSearch.trim().toLowerCase();
@@ -416,6 +505,15 @@ function renderStatus(S){
   document.getElementById('statusNote').innerHTML=note;
 }
 
+document.getElementById('masterTbl').addEventListener('click',e=>{ const b=e.target.closest('.mchk'); if(!b)return;
+  const s=b.dataset.simul; if(stageOf(s)>=1){ setStage(s,0); delete PAT[s]; } else { setStage(s,1); PAT[s]=Date.now(); } save(); render(); });
+document.getElementById('masterSearch').addEventListener('input',e=>{ MF.q=e.target.value; renderMaster(); });
+document.getElementById('fOrder').addEventListener('change',e=>{ MF.order=e.target.value; renderMaster(); });
+document.getElementById('fDia').addEventListener('change',e=>{ MF.dia=e.target.value; renderMaster(); });
+document.getElementById('fTrack').addEventListener('change',e=>{ MF.track=e.target.value; renderMaster(); });
+document.getElementById('fStatus').addEventListener('change',e=>{ MF.status=e.target.value; renderMaster(); });
+document.getElementById('fClear').addEventListener('click',()=>{ MF.q='';MF.order='';MF.dia='';MF.track='';MF.status='';
+  document.getElementById('masterSearch').value=''; ['fOrder','fDia','fTrack','fStatus'].forEach(id=>document.getElementById(id).value=''); renderMaster(); });
 document.getElementById('board').addEventListener('click',e=>{
   const dc=e.target.closest('.demo-cure');
   if(dc){ SHUCHOT.filter(s=>s.so===dc.dataset.so && stageOf(s.simul)===1 && !cured(s.simul)).forEach(s=>PAT[s.simul]=Date.now()-CURE_DAYS*86400000-1000); save(); render(); return; }

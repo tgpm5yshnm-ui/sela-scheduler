@@ -63,6 +63,16 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .pk .bar i{display:block; height:100%; background:var(--muted)}
 .pk.s-prod .bar i{background:var(--amber)} .pk.s-ready .bar i{background:var(--accent)} .pk.s-ship .bar i{background:var(--ok)}
 
+.scope-tabs{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px}
+.scope-tabs button{border:1px solid var(--line); background:var(--surface); color:var(--muted); border-radius:999px; padding:7px 13px; font-size:12.5px; font-weight:600; display:inline-flex; align-items:center; gap:7px}
+.scope-tabs button:hover{border-color:var(--accent)}
+.scope-tabs button.active{background:var(--accent); color:#fff; border-color:var(--accent)}
+.scope-tabs button .b{background:var(--surface3); color:var(--muted); font-size:11px; padding:1px 7px; border-radius:999px; font-weight:700}
+.scope-tabs button.active .b{background:rgba(255,255,255,.25); color:#fff}
+.scope-tabs button.late .b{background:var(--danger-bg); color:var(--danger)}
+.scope-tabs button.late.active{background:var(--danger); border-color:var(--danger)}
+.master-foot{display:flex; align-items:center; gap:12px; margin-top:10px; flex-wrap:wrap}
+.master-foot .note{margin-top:0}
 .master-controls{display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:12px}
 .master-controls .sw{position:relative; flex:1 1 240px; min-width:0}
 .master-controls .sw .ic{position:absolute; inset-inline-start:11px; top:50%; transform:translateY(-50%); font-size:13px; opacity:.55; pointer-events:none}
@@ -214,21 +224,20 @@ details.ctl[open] summary .chev{transform:rotate(180deg)}
   <div class="pipe" id="pipe"></div>
 
   <section class="block">
-    <h2>📋 טבלת עבודה — כל השוחות במקום אחד<span class="count-pill" id="masterPill">0</span></h2>
+    <h2>📋 טבלת עבודה — תצוגה ממוקדת<span class="count-pill" id="masterPill">0</span></h2>
     <div class="body">
+      <div class="scope-tabs" id="scopeTabs"></div>
       <div class="master-controls">
         <div class="sw">
           <span class="ic">🔎</span>
-          <input id="masterSearch" type="search" inputmode="search" placeholder="חיפוש לפי מס׳ שוחה סימול, הזמנה או לקוח…" aria-label="חיפוש">
+          <input id="masterSearch" type="search" inputmode="search" placeholder="חיפוש בכל המאגר — מס׳ שוחה סימול, הזמנה או לקוח…" aria-label="חיפוש">
         </div>
-        <select id="fOrder" class="fsel" aria-label="סינון הזמנה"></select>
         <select id="fDia" class="fsel" aria-label="סינון קוטר"><option value="">כל הקטרים</option><option value="100">קוטר 100</option><option value="125">קוטר 125</option><option value="150">קוטר 150</option></select>
         <select id="fTrack" class="fsel" aria-label="סינון תבנית"></select>
-        <select id="fStatus" class="fsel" aria-label="סינון סטטוס"><option value="">כל הסטטוסים</option><option value="0">מתוכנן</option><option value="1">יוצר</option><option value="2">מוכן למשלוח</option><option value="3">נשלח ללקוח</option></select>
-        <button class="btn ghost" id="fClear">נקה סינון</button>
+        <button class="btn ghost" id="fClear">נקה</button>
       </div>
       <div class="tbl-scroll"><table class="master" id="masterTbl"></table></div>
-      <div class="note" id="masterInfo"></div>
+      <div class="master-foot"><span class="note" id="masterInfo"></span><button class="btn ghost" id="loadMore" style="display:none">טען עוד 50 ▾</button></div>
     </div>
   </section>
 
@@ -355,7 +364,26 @@ function schedule(){
 
 /* סטטוס פר‑שוחה (0..3) + חותמת ייצור לחישוב ייבוש */
 let STAGE=loadJSON('sela_stage'), PAT=loadJSON('sela_pat'), boardFilter='all', boardSearch='', sheetDay=0;
-const MF={q:'',order:'',dia:'',track:'',status:''};
+const MF={q:'',dia:'',track:'',scope:'week',page:1};
+const PAGE=50;
+const SCOPES=[
+  {id:'week',  name:'השבוע'},
+  {id:'prod',  name:'בייצור'},
+  {id:'ready', name:'מוכן למשלוח'},
+  {id:'late',  name:'באיחור'},
+  {id:'shipped',name:'נשלח'},
+  {id:'all',   name:'כל המאגר'},
+];
+function inScope(s,id){ const st=stageOf(s.simul);
+  switch(id){
+    case 'week': return s._day!=null;
+    case 'prod': return st===1;
+    case 'ready': return st===2;
+    case 'late': return st<3 && s.delivery<TODAY;
+    case 'shipped': return st===3;
+    default: return true;
+  }
+}
 function loadJSON(k){ try{const s=localStorage.getItem(k);return s?JSON.parse(s):{};}catch(e){return {};} }
 function save(){ try{localStorage.setItem('sela_stage',JSON.stringify(STAGE));localStorage.setItem('sela_pat',JSON.stringify(PAT));}catch(e){} }
 function stageOf(s){ return STAGE[s]||0; }
@@ -395,20 +423,29 @@ function hl(text,q){ if(!q) return text; const i=text.toLowerCase().indexOf(q); 
   return text.slice(0,i)+'<mark>'+text.slice(i,i+q.length)+'</mark>'+text.slice(i+q.length); }
 
 function renderMaster(){
-  // populate filter dropdowns once
-  const of=document.getElementById('fOrder');
-  if(of && of.options.length<=1){ of.innerHTML='<option value="">כל ההזמנות</option>'+ORDERS.map(o=>`<option value="${o.so}">${o.so} · ${o.customer}</option>`).join(''); }
   const tf=document.getElementById('fTrack');
   if(tf && tf.options.length<=1){ tf.innerHTML='<option value="">כל התבניות</option>'+TRACK_ORDER.map(t=>`<option value="${t}">${TRACKS[t].name}</option>`).join(''); }
 
   const q=MF.q.trim().toLowerCase();
-  const match=s=> (!q || s.simul.toLowerCase().includes(q) || s.so.toLowerCase().includes(q) || s.customer.toLowerCase().includes(q))
-    && (!MF.order || s.so===MF.order) && (!MF.dia || s.diameter===+MF.dia)
-    && (!MF.track || s._tr===MF.track) && (MF.status===''|| stageOf(s.simul)===+MF.status);
-  const rows=SHUCHOT.filter(match);
+  const searching = q.length>0;
+  // חיפוש גובר על התצוגה — מחפש בכל המאגר, כמו במערכות הגדולות
+  const inView=s=> searching ? true : inScope(s, MF.scope);
+  const match=s=> inView(s)
+    && (!q || s.simul.toLowerCase().includes(q) || s.so.toLowerCase().includes(q) || s.customer.toLowerCase().includes(q))
+    && (!MF.dia || s.diameter===+MF.dia) && (!MF.track || s._tr===MF.track);
+
+  // scope tabs with live counts
+  document.getElementById('scopeTabs').innerHTML = SCOPES.map(sc=>{
+    const n=SHUCHOT.filter(s=>inScope(s,sc.id)).length;
+    const active = !searching && MF.scope===sc.id;
+    return `<button data-scope="${sc.id}" class="${sc.id==='late'?'late ':''}${active?'active':''}">${sc.name}<span class="b">${n}</span></button>`;
+  }).join('');
+
+  const all=SHUCHOT.filter(match);
+  const shown=all.slice(0, MF.page*PAGE);
   const stName=['מתוכנן','יוצר','מוכן למשלוח','נשלח'];
   const th='<thead><tr><th>יוצר</th><th>מס׳ שוחה סימול</th><th>הזמנה</th><th>לקוח</th><th>קוטר</th><th>תבנית</th><th>תאריך יציקה</th><th>סטטוס</th><th>אישור תכנון</th><th>תאריך אספקה</th></tr></thead>';
-  const body=rows.map(s=>{
+  const body=shown.map(s=>{
     const st=stageOf(s.simul), on=st>=1, M=TRACKS[s._tr];
     const cast = s._day!=null ? fmtShort(DAYS[s._day]) : '—';
     const late = st<3 && s.delivery < TODAY, warn = st<3 && !late && s.delivery <= addD(TODAY,3);
@@ -426,12 +463,16 @@ function renderMaster(){
       <td>${fmtShort(s.approval)}</td>
       <td class="dtag ${dcls}">${fmtShort(s.delivery)}${late?' ⚠️':''}</td></tr>`;
   }).join('');
-  document.getElementById('masterTbl').innerHTML=th+'<tbody>'+(body||'<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:16px">אין שוחות התואמות לסינון</td></tr>')+'</tbody>';
-  document.getElementById('masterPill').textContent=rows.length;
-  const anyF = q||MF.order||MF.dia||MF.track||MF.status!=='';
-  document.getElementById('masterInfo').innerHTML = anyF
-    ? `מוצגות <b>${rows.length}</b> מתוך ${SHUCHOT.length} שוחות (מסונן). ⚠️ = חריגה מתאריך אספקה.`
-    : `סה״כ ${SHUCHOT.length} שוחות. חפש או סנן כדי למקד. סימון ✓ מדווח שהשוחה יוצרה.`;
+  document.getElementById('masterTbl').innerHTML=th+'<tbody>'+(body||'<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:16px">אין שוחות בתצוגה זו</td></tr>')+'</tbody>';
+  document.getElementById('masterPill').textContent=all.length;
+
+  const scopeName = SCOPES.find(x=>x.id===MF.scope).name;
+  const lm=document.getElementById('loadMore');
+  if(shown.length<all.length){ lm.style.display='inline-flex'; lm.textContent=`טען עוד ${Math.min(PAGE,all.length-shown.length)} ▾`; }
+  else lm.style.display='none';
+  document.getElementById('masterInfo').innerHTML = searching
+    ? `חיפוש בכל המאגר: <b>${all.length}</b> תוצאות. ⚠️ = חריגה מאספקה.`
+    : `תצוגת "<b>${scopeName}</b>": מציג ${shown.length} מתוך ${all.length}. סה״כ במאגר ${SHUCHOT.length} שוחות — נטענות רק לפי תצוגה, לא הכל.`;
 }
 
 function renderBoard(){
@@ -507,13 +548,13 @@ function renderStatus(S){
 
 document.getElementById('masterTbl').addEventListener('click',e=>{ const b=e.target.closest('.mchk'); if(!b)return;
   const s=b.dataset.simul; if(stageOf(s)>=1){ setStage(s,0); delete PAT[s]; } else { setStage(s,1); PAT[s]=Date.now(); } save(); render(); });
-document.getElementById('masterSearch').addEventListener('input',e=>{ MF.q=e.target.value; renderMaster(); });
-document.getElementById('fOrder').addEventListener('change',e=>{ MF.order=e.target.value; renderMaster(); });
-document.getElementById('fDia').addEventListener('change',e=>{ MF.dia=e.target.value; renderMaster(); });
-document.getElementById('fTrack').addEventListener('change',e=>{ MF.track=e.target.value; renderMaster(); });
-document.getElementById('fStatus').addEventListener('change',e=>{ MF.status=e.target.value; renderMaster(); });
-document.getElementById('fClear').addEventListener('click',()=>{ MF.q='';MF.order='';MF.dia='';MF.track='';MF.status='';
-  document.getElementById('masterSearch').value=''; ['fOrder','fDia','fTrack','fStatus'].forEach(id=>document.getElementById(id).value=''); renderMaster(); });
+document.getElementById('scopeTabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return; MF.scope=b.dataset.scope; MF.page=1; renderMaster(); });
+document.getElementById('masterSearch').addEventListener('input',e=>{ MF.q=e.target.value; MF.page=1; renderMaster(); });
+document.getElementById('fDia').addEventListener('change',e=>{ MF.dia=e.target.value; MF.page=1; renderMaster(); });
+document.getElementById('fTrack').addEventListener('change',e=>{ MF.track=e.target.value; MF.page=1; renderMaster(); });
+document.getElementById('loadMore').addEventListener('click',()=>{ MF.page++; renderMaster(); });
+document.getElementById('fClear').addEventListener('click',()=>{ MF.q='';MF.dia='';MF.track='';MF.page=1;
+  document.getElementById('masterSearch').value=''; ['fDia','fTrack'].forEach(id=>document.getElementById(id).value=''); renderMaster(); });
 document.getElementById('board').addEventListener('click',e=>{
   const dc=e.target.closest('.demo-cure');
   if(dc){ SHUCHOT.filter(s=>s.so===dc.dataset.so && stageOf(s.simul)===1 && !cured(s.simul)).forEach(s=>PAT[s.simul]=Date.now()-CURE_DAYS*86400000-1000); save(); render(); return; }

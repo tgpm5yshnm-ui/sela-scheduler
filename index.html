@@ -63,6 +63,23 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .pk .bar i{display:block; height:100%; background:var(--muted)}
 .pk.s-prod .bar i{background:var(--amber)} .pk.s-ready .bar i{background:var(--accent)} .pk.s-ship .bar i{background:var(--ok)}
 
+.wk-nav{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:12px}
+.wkbtn{border:1px solid var(--line); background:var(--surface); color:var(--ink); border-radius:9px; padding:8px 13px; font-size:13px; font-weight:600; box-shadow:var(--shadow)}
+.wkbtn:hover{border-color:var(--accent)}
+.wk-label{font-size:15px; font-weight:700; font-variant-numeric:tabular-nums; min-width:180px; text-align:center}
+table.ov{border-collapse:collapse; width:100%; min-width:900px}
+table.ov th,table.ov td{border:1px solid var(--line2); vertical-align:top; padding:6px}
+table.ov thead th{background:var(--surface2); color:var(--muted); font-size:12px; font-weight:600; text-align:center; position:sticky; top:0}
+table.ov thead th.wknd{opacity:.5}
+table.ov td.trk,table.ov th.trk{position:sticky; inset-inline-start:0; background:var(--surface); text-align:right; white-space:nowrap; font-weight:700; font-size:12px; min-width:120px; z-index:1}
+table.ov td.trk small{display:block; color:var(--muted); font-weight:400}
+table.ov td.trk.pix{color:var(--violet)} table.ov td.trk.green{color:var(--ok)}
+.ovcell{display:flex; flex-wrap:wrap; gap:3px; min-height:24px; align-content:flex-start}
+.ovc{font-size:10.5px; font-weight:600; padding:2px 5px; border-radius:5px; background:var(--surface3); color:var(--accent-ink); font-variant-numeric:tabular-nums; cursor:default}
+.ovc.pix{background:var(--violet-bg); color:var(--violet)} .ovc.green{background:var(--ok-bg); color:var(--ok)}
+.ovc.s1{outline:1.5px solid var(--amber)} .ovc.s2{outline:1.5px solid var(--accent)} .ovc.s3{background:var(--ok); color:#fff}
+.ov-cnt{display:block; text-align:center; color:var(--muted); font-size:11px; font-weight:700; margin-top:4px}
+.ov-empty{color:var(--muted); text-align:center; padding:26px; font-size:13.5px}
 .scope-tabs{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px}
 .scope-tabs button{border:1px solid var(--line); background:var(--surface); color:var(--muted); border-radius:999px; padding:7px 13px; font-size:12.5px; font-weight:600; display:inline-flex; align-items:center; gap:7px}
 .scope-tabs button:hover{border-color:var(--accent)}
@@ -253,6 +270,20 @@ details.ctl[open] summary .chev{transform:rotate(180deg)}
   </section>
 
   <section class="block">
+    <h2>🗓️ תצוגת שבוע — מצב כללי<span class="count-pill" id="ovPill">0</span></h2>
+    <div class="body">
+      <div class="wk-nav">
+        <button class="wkbtn" id="wkPrev">‹ שבוע קודם</button>
+        <span class="wk-label" id="wkLabel"></span>
+        <button class="wkbtn" id="wkNext">שבוע הבא ›</button>
+        <button class="btn ghost" id="wkToday">חזרה לשבוע הנוכחי</button>
+      </div>
+      <div class="tbl-scroll"><div id="ovGrid"></div></div>
+      <div class="note">כל תא = השוחות המשובצות לאותה תבנית באותו יום (מס׳ שוחה סימול). בחר שבוע כדי לראות את מצבו — בדיוק כמו לוח השיבוץ באקסל. סגול=פיקס · ירוק=גרין גבוה.</div>
+    </div>
+  </section>
+
+  <section class="block">
     <h2>🗂️ לוח סטטוס ייצור<span class="count-pill" id="boardPill">0</span></h2>
     <div class="body">
       <div class="board-search">
@@ -391,14 +422,14 @@ function schedule(){
   SHUCHOT.forEach(s=>{ s._tr=routeOf(s); s._day=null; });   // לא‑מאושרות לא משובצות
   const ordered=SHUCHOT.filter(s=>s.sched).sort((a,b)=>TRACK_PRIO[a._tr]-TRACK_PRIO[b._tr]); let overflow=0;
   ordered.forEach(s=>{ const elig=[]; for(let i=0;i<DAYS.length;i++){ if(CAP[s._tr]-load[i][s._tr]>0 && DAY_CAP-daySum[i]>0) elig.push(i); }
-    if(elig.length){ elig.sort((a,b)=>daySum[a]-daySum[b]); const i=elig[0]; load[i][s._tr]++; daySum[i]++; s._day=i; } else { s._day=null; overflow++; } });
+    if(elig.length){ elig.sort((a,b)=>daySum[a]-daySum[b]); const i=elig[0]; load[i][s._tr]++; daySum[i]++; s._day=i; s._date=new Date(DAYS[i]); } else { s._day=null; s._date=null; overflow++; } });
   return {load,daySum,overflow};
 }
 
 /* סטטוס פר‑שוחה (0..3) + חותמת ייצור לחישוב ייבוש */
 let STAGE=loadJSON('sela_stage'), PAT=loadJSON('sela_pat'), boardFilter='all', boardSearch='', sheetDay=0;
 const MF={q:'',dia:'',track:'',status:'',scope:'recent',page:1};
-const PAGE=50; const RECENT_N=10;
+const PAGE=50; const RECENT_N=10; let ovOffset=0;
 const SCOPES=[
   {id:'recent',name:'10 הזמנות אחרונות'},
   {id:'week',  name:'השבוע'},
@@ -448,7 +479,31 @@ function seedIfEmpty(){
 function render(){
   const S=schedule();
   document.getElementById('weekRange').textContent=`(${DNS[DAYS[0].getDay()]}׳ ${fmtShort(DAYS[0])} – ${DNS[DAYS[4].getDay()]}׳ ${fmtShort(DAYS[4])})`;
-  renderPipe(); renderMaster(); renderBoard(); renderSheet(); renderStatus(S);
+  renderPipe(); renderMaster(); renderOverview(); renderBoard(); renderSheet(); renderStatus(S);
+}
+function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function renderOverview(){
+  const days=DAYS.map(d=>addD(d, ovOffset*7));
+  document.getElementById('wkLabel').textContent = `${fmtShort(days[0])} – ${fmtShort(days[4])}/${String(days[4].getFullYear()).slice(2)}`;
+  const dateSet=days.map(iso);
+  const active=activeShuchot();
+  const head=`<thead><tr><th class="trk">תבנית</th>${days.map(d=>`<th>${DN[d.getDay()]}<br><small style="color:var(--muted);font-weight:400">${fmtShort(d)}</small></th>`).join('')}</tr></thead>`;
+  let total=0;
+  const rows=TRACK_ORDER.map(t=>{
+    const M=TRACKS[t];
+    const tds=dateSet.map(dk=>{
+      const cell=active.filter(s=>s._tr===t && s._date && iso(s._date)===dk);
+      total+=cell.length;
+      const chips=cell.map(s=>{const st=stageOf(s.simul); return `<span class="ovc ${M.cls}${st?' s'+st:''}" title="${s.so} · ${s.customer}">${s.simul}</span>`;}).join('');
+      return `<td><div class="ovcell">${chips}</div>${cell.length?`<span class="ov-cnt">${cell.length}/${CAP[t]}</span>`:''}</td>`;
+    }).join('');
+    return `<tr><td class="trk ${M.cls}">${M.name}<small>קיבולת ${CAP[t]}/יום</small></td>${tds}</tr>`;
+  }).join('');
+  const hasData=total>0;
+  document.getElementById('ovGrid').innerHTML = hasData
+    ? `<table class="ov">${head}<tbody>${rows}</tbody></table>`
+    : `<div class="ov-empty">אין שיבוץ לשבוע זה (${fmtShort(days[0])}–${fmtShort(days[4])}). במערכת מול Priority כל שבוע יציג את השיבוץ האמיתי שלו.</div>`;
+  document.getElementById('ovPill').textContent=total;
 }
 function kpiPipe(){ const c=[0,0,0,0]; activeShuchot().forEach(s=>c[stageOf(s.simul)]++); return c; }
 function renderPipe(){
@@ -597,6 +652,9 @@ document.getElementById('fDia').addEventListener('change',e=>{ MF.dia=e.target.v
 document.getElementById('fTrack').addEventListener('change',e=>{ MF.track=e.target.value; MF.page=1; renderMaster(); });
 document.getElementById('fStatus').addEventListener('change',e=>{ MF.status=e.target.value; MF.page=1; renderMaster(); });
 document.getElementById('loadMore').addEventListener('click',()=>{ MF.page++; renderMaster(); });
+document.getElementById('wkPrev').addEventListener('click',()=>{ ovOffset--; renderOverview(); });
+document.getElementById('wkNext').addEventListener('click',()=>{ ovOffset++; renderOverview(); });
+document.getElementById('wkToday').addEventListener('click',()=>{ ovOffset=0; renderOverview(); });
 document.getElementById('fClear').addEventListener('click',()=>{ MF.q='';MF.dia='';MF.track='';MF.status='';MF.page=1;
   document.getElementById('masterSearch').value=''; ['fDia','fTrack','fStatus'].forEach(id=>document.getElementById(id).value=''); renderMaster(); });
 document.getElementById('board').addEventListener('click',e=>{

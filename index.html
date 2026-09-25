@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>תמונת מצב ייצור — אב-טיפוס</title>
+<title>ניהול ייצור — אב-טיפוס</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -25,21 +25,19 @@
   --ink:#e7edf2; --muted:#93a1ac; --line:#2c363e; --line2:#232c33;
   --accent:#5aa4d6; --accent-ink:#8cc3e8; --amber:#e0a33a; --amber-bg:#3a2f14; --amber-line:#5c491d;
   --danger:#f0777c; --danger-bg:#3a1f21; --danger-line:#5c2b2e; --ok:#5cc48a; --ok-bg:#183226;
-  --shadow:0 1px 2px rgba(0,0,0,.3);
+  --violet:#c3a8ef; --violet-bg:#2c2340; --shadow:0 1px 2px rgba(0,0,0,.3); color-scheme:dark;
 }}
 :root[data-theme="dark"]{
   --bg:#12171b; --surface:#1a2127; --surface2:#20282f; --surface3:#263038;
   --ink:#e7edf2; --muted:#93a1ac; --line:#2c363e; --line2:#232c33;
   --accent:#5aa4d6; --accent-ink:#8cc3e8; --amber:#e0a33a; --amber-bg:#3a2f14; --amber-line:#5c491d;
   --danger:#f0777c; --danger-bg:#3a1f21; --danger-line:#5c2b2e; --ok:#5cc48a; --ok-bg:#183226;
-  --shadow:0 1px 2px rgba(0,0,0,.3);
+  --violet:#c3a8ef; --violet-bg:#2c2340; --shadow:0 1px 2px rgba(0,0,0,.3); color-scheme:dark;
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--violet:#c3a8ef; --violet-bg:#2c2340; color-scheme:dark}}
-:root[data-theme="dark"]{--violet:#c3a8ef; --violet-bg:#2c2340; color-scheme:dark}
 *{box-sizing:inherit}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0; background:var(--bg); color:var(--ink); font-family:"Rubik",-apple-system,"Segoe UI",Arial,sans-serif; font-size:15px; line-height:1.5; -webkit-font-smoothing:antialiased;}
-.wrap{max-width:1080px; margin:0 auto; padding:16px 16px 64px}
+.wrap{max-width:1120px; margin:0 auto; padding:16px 16px 64px}
 header.top{display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:18px}
 .brand h1{font-size:22px; font-weight:700; margin:0; letter-spacing:-.2px}
 .brand .sub{color:var(--muted); font-size:13px; margin-top:2px}
@@ -50,17 +48,21 @@ button{font-family:inherit; cursor:pointer}
 input[type=number]{-moz-appearance:textfield; appearance:textfield}
 input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none; margin:0}
 :focus-visible{outline:2px solid var(--accent); outline-offset:2px}
-input:focus-visible,select:focus-visible{outline:2px solid var(--accent); outline-offset:1px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 .btn{border:1px solid var(--line); background:var(--surface); color:var(--ink); border-radius:9px; padding:8px 12px; font-size:13.5px; font-weight:500; box-shadow:var(--shadow)}
-.btn:hover{border-color:var(--accent)}
-.btn.primary{background:var(--accent); color:#fff; border-color:var(--accent)}
-.btn.ghost{background:transparent; box-shadow:none}
-.kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px}
-.kpi{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:14px 16px; box-shadow:var(--shadow)}
-.kpi .n{font-size:26px; font-weight:700; line-height:1.1; font-variant-numeric:tabular-nums}
-.kpi .l{color:var(--muted); font-size:13px; margin-top:3px}
-.kpi.mut .n{color:var(--muted)} .kpi.good .n{color:var(--ok)}
+.btn:hover{border-color:var(--accent)} .btn.ghost{background:transparent; box-shadow:none}
+
+/* dashboard: pipeline */
+.pipe{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px}
+.pk{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:13px 15px; box-shadow:var(--shadow); position:relative; overflow:hidden}
+.pk::before{content:''; position:absolute; inset-inline-start:0; top:0; bottom:0; width:4px; background:var(--muted)}
+.pk.s-prod::before{background:var(--amber)} .pk.s-ready::before{background:var(--accent)} .pk.s-ship::before{background:var(--ok)}
+.pk .n{font-size:26px; font-weight:700; line-height:1.1; font-variant-numeric:tabular-nums}
+.pk .l{color:var(--muted); font-size:12.5px; margin-top:2px}
+.pk .bar{height:4px; border-radius:999px; background:var(--surface3); margin-top:8px; overflow:hidden}
+.pk .bar i{display:block; height:100%; background:var(--muted)}
+.pk.s-prod .bar i{background:var(--amber)} .pk.s-ready .bar i{background:var(--accent)} .pk.s-ship .bar i{background:var(--ok)}
+
 section.block{background:var(--surface); border:1px solid var(--line); border-radius:14px; margin-bottom:18px; overflow:hidden; box-shadow:var(--shadow)}
 .block > h2{font-size:15px; font-weight:600; margin:0; padding:14px 16px; border-bottom:1px solid var(--line2); display:flex; align-items:center; gap:9px; flex-wrap:wrap}
 .block > h2 .rng{color:var(--muted); font-weight:400; font-size:13px}
@@ -68,46 +70,48 @@ section.block{background:var(--surface); border:1px solid var(--line); border-ra
 .count-pill{background:var(--surface3); color:var(--muted); font-size:12px; font-weight:600; padding:2px 9px; border-radius:999px; margin-inline-start:auto}
 .tbl-scroll{overflow-x:auto; -webkit-overflow-scrolling:touch}
 
+/* Kanban board */
+.seg{display:inline-flex; border:1px solid var(--line); border-radius:9px; overflow:hidden; margin-bottom:14px}
+.seg button{border:0; background:var(--surface); color:var(--muted); padding:8px 13px; font-size:12.5px; font-weight:500}
+.seg button.active{background:var(--accent); color:#fff}
+.board{display:flex; gap:12px; overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:6px}
+.col{flex:1 0 236px; min-width:236px; background:var(--surface2); border:1px solid var(--line); border-radius:12px; display:flex; flex-direction:column}
+.col-head{padding:10px 12px; font-weight:700; font-size:13px; display:flex; align-items:center; gap:8px; border-bottom:2px solid var(--muted); border-radius:12px 12px 0 0}
+.col-head .cnt{margin-inline-start:auto; background:var(--surface); color:var(--muted); font-size:12px; padding:2px 9px; border-radius:999px; font-weight:700}
+.col.s-prod .col-head{border-bottom-color:var(--amber); color:var(--amber)}
+.col.s-ready .col-head{border-bottom-color:var(--accent); color:var(--accent-ink)}
+.col.s-ship .col-head{border-bottom-color:var(--ok); color:var(--ok)}
+.col-body{padding:8px; display:flex; flex-direction:column; gap:8px; overflow-y:auto; max-height:460px}
+.col-empty{color:var(--muted); text-align:center; padding:18px 8px; font-size:12px}
+.ordcard{background:var(--surface); border:1px solid var(--line); border-radius:9px; padding:8px 9px}
+.ordcard .oh{display:flex; align-items:center; gap:7px; font-size:12px; margin-bottom:6px}
+.ordcard .oh .so{font-weight:700}
+.ordcard .oh .cust{color:var(--muted); font-size:11px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:96px}
+.mvs{margin-inline-start:auto; display:flex; gap:4px}
+.mv{width:24px; height:24px; border:1px solid var(--line); background:var(--surface); color:var(--ink); border-radius:6px; font-size:15px; font-weight:800; line-height:1; display:inline-flex; align-items:center; justify-content:center}
+.mv.fwd:hover{background:var(--ok); color:#fff; border-color:var(--ok)}
+.mv.back:hover{background:var(--surface3)}
+.chips{display:flex; flex-wrap:wrap; gap:4px}
+.shchip{font-size:11px; font-weight:600; padding:3px 7px; border-radius:6px; background:var(--surface3); color:var(--accent-ink); cursor:pointer; border:1px solid transparent; user-select:none; font-variant-numeric:tabular-nums}
+.shchip:hover{border-color:var(--accent)}
+.shchip.green{background:var(--ok-bg); color:var(--ok)}
+.shchip.pix{background:var(--violet-bg); color:var(--violet)}
+.hint{color:var(--muted); font-size:12px; margin-top:10px; line-height:1.6}
+
+/* casting schedule table */
 table.status{border-collapse:collapse; width:100%; min-width:820px; font-variant-numeric:tabular-nums}
-table.status th,table.status td{padding:10px 10px; border-bottom:1px solid var(--line2); text-align:center; font-size:13.5px}
+table.status th,table.status td{padding:9px 8px; border-bottom:1px solid var(--line2); text-align:center; font-size:13px}
 table.status thead th{color:var(--muted); font-weight:500; font-size:12px; background:var(--surface2)}
-table.status thead th.grn{color:var(--ok)}
-table.status thead th.pix{color:var(--violet)}
+table.status thead th.grn{color:var(--ok)} table.status thead th.pix{color:var(--violet)}
 table.status th.day,table.status td.day{text-align:right; white-space:nowrap; font-weight:600; position:sticky; inset-inline-start:0; background:var(--surface); border-inline-end:1px solid var(--line2)}
 table.status td.day small{display:block; color:var(--muted); font-weight:400; font-size:11.5px}
 table.status td.tot,table.status th.tot{background:var(--surface2); font-weight:700}
 table.status tfoot td{background:var(--surface3); font-weight:700; border-top:2px solid var(--line)}
 table.status tfoot td.day{background:var(--surface3)}
-.cap{display:inline-flex; flex-direction:column; align-items:center; gap:1px; min-width:52px; padding:5px 7px; border-radius:9px; font-weight:600}
-.cap .big{font-size:14px}
-.cap .sub{font-size:10.5px; font-weight:500; opacity:.85}
-.cap.full{background:var(--amber-bg); color:var(--amber)}
-.cap.part{background:var(--ok-bg); color:var(--ok)}
-.cap.over{background:var(--danger-bg); color:var(--danger)}
-.cap.empty{background:var(--surface3); color:var(--muted)}
-.cap.low{background:var(--accent); color:#fff; opacity:.9}
-.legend{display:flex; gap:14px; flex-wrap:wrap; margin-top:12px; font-size:12px; color:var(--muted)}
-.legend span{display:inline-flex; align-items:center; gap:6px}
-.legend i{width:12px; height:12px; border-radius:4px; display:inline-block}
-.i-full{background:var(--amber-bg); border:1px solid var(--amber-line)}
-.i-part{background:var(--ok-bg); border:1px solid var(--ok)}
-.i-over{background:var(--danger-bg); border:1px solid var(--danger-line)}
-
-table.orders{border-collapse:collapse; width:100%; min-width:760px; font-size:13px; font-variant-numeric:tabular-nums}
-table.orders th,table.orders td{padding:9px 11px; text-align:right; border-bottom:1px solid var(--line2); white-space:nowrap}
-table.orders thead th{color:var(--muted); font-weight:500; font-size:12px; background:var(--surface2); text-align:center}
-table.orders thead th.oid{text-align:right}
-table.orders tbody tr:hover{background:var(--surface2)}
-table.orders th.oid,table.orders td.oid{position:sticky; inset-inline-start:0; background:var(--surface); border-inline-end:1px solid var(--line2); z-index:1}
-table.orders tbody tr:hover td.oid{background:var(--surface2)}
-table.orders td.daycell{text-align:center}
-table.orders td.daycell.zero{color:var(--muted); opacity:.35}
-table.orders td.tot,table.orders th.tot{text-align:center; font-weight:700; background:var(--surface2)}
-table.orders tfoot td{background:var(--surface3); font-weight:700; text-align:center; border-top:2px solid var(--line)}
-table.orders tfoot td.oid{text-align:right; background:var(--surface3)}
-.track-tag{font-size:11.5px; font-weight:600; padding:2px 9px; border-radius:6px; background:var(--surface3); color:var(--accent-ink); white-space:nowrap}
-.track-tag.green{background:var(--ok-bg); color:var(--ok)}
-.track-tag.pix{background:var(--violet-bg); color:var(--violet)}
+.cap{display:inline-flex; flex-direction:column; align-items:center; min-width:42px; padding:5px 6px; border-radius:9px; font-weight:600}
+.cap .big{font-size:14px} .cap .sub{font-size:10px; font-weight:500; opacity:.85}
+.cap.full{background:var(--amber-bg); color:var(--amber)} .cap.part{background:var(--ok-bg); color:var(--ok)}
+.cap.low{background:var(--accent); color:#fff; opacity:.92} .cap.empty{background:var(--surface3); color:var(--muted)}
 
 details.ctl{background:var(--surface); border:1px solid var(--line); border-radius:14px; margin-bottom:14px; box-shadow:var(--shadow)}
 details.ctl summary{cursor:pointer; padding:13px 16px; font-weight:600; font-size:14px; list-style:none; display:flex; align-items:center; gap:9px}
@@ -115,26 +119,20 @@ details.ctl summary::-webkit-details-marker{display:none}
 details.ctl summary .chev{margin-inline-start:auto; color:var(--muted); transition:transform .15s}
 details.ctl[open] summary .chev{transform:rotate(180deg)}
 .ctl .body{padding:6px 16px 16px; border-top:1px solid var(--line2)}
-.form-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-top:12px}
-label.f{display:flex; flex-direction:column; gap:5px; font-size:12.5px; color:var(--muted)}
-label.f input,label.f select{font-family:inherit; font-size:14px; color:var(--ink); background:var(--surface2); border:1px solid var(--line); border-radius:9px; padding:8px 10px}
 .cap-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; margin-top:12px}
 .cap-item{display:flex; align-items:center; justify-content:space-between; gap:8px; background:var(--surface2); border:1px solid var(--line); border-radius:10px; padding:9px 12px}
 .cap-item .lab{font-size:13px; font-weight:500}
 .cap-item .lab small{display:block; color:var(--muted); font-weight:400; font-size:11px}
-.cap-item.grn{border-color:var(--ok); background:var(--ok-bg)}
-.cap-item.pix{border-color:var(--violet); background:var(--violet-bg)}
-.cap-item.glob{border-color:var(--accent); background:var(--surface2); border-width:1.5px}
-.cap-item.glob .lab{font-weight:700}
-.cap-item .stepper{display:inline-flex; align-items:center; border:1px solid var(--line); border-radius:9px; overflow:hidden; background:var(--surface)}
-.cap-item .step{width:34px; height:34px; border:0; background:var(--surface2); color:var(--ink); font-size:19px; line-height:1; font-weight:600; display:flex; align-items:center; justify-content:center; transition:background .12s,color .12s}
-.cap-item .step:hover{background:var(--accent); color:#fff}
-.cap-item .step:active{background:var(--accent-ink); color:#fff}
-.cap-item .step-val{width:46px; height:34px; border:0; border-inline:1px solid var(--line); background:var(--surface); color:var(--ink); text-align:center; font-family:inherit; font-size:15px; font-weight:700; font-variant-numeric:tabular-nums}
-.cap-item .step-val:focus{outline:none; background:var(--surface2)}
+.cap-item.grn{border-color:var(--ok); background:var(--ok-bg)} .cap-item.pix{border-color:var(--violet); background:var(--violet-bg)}
+.cap-item.glob{border-color:var(--accent); border-width:1.5px} .cap-item.glob .lab{font-weight:700}
+.stepper{display:inline-flex; align-items:center; border:1px solid var(--line); border-radius:9px; overflow:hidden; background:var(--surface)}
+.step{width:34px; height:34px; border:0; background:var(--surface2); color:var(--ink); font-size:19px; font-weight:600; display:flex; align-items:center; justify-content:center}
+.step:hover{background:var(--accent); color:#fff}
+.step-val{width:46px; height:34px; border:0; border-inline:1px solid var(--line); background:var(--surface); color:var(--ink); text-align:center; font-family:inherit; font-size:15px; font-weight:700; font-variant-numeric:tabular-nums}
+.step-val:focus{outline:none; background:var(--surface2)}
 .note{color:var(--muted); font-size:12.5px; margin-top:10px; line-height:1.6}
 .foot{color:var(--muted); font-size:12px; text-align:center; margin-top:22px; line-height:1.7}
-@media (max-width:640px){ .kpis{grid-template-columns:repeat(2,1fr)} .brand h1{font-size:19px} }
+@media (max-width:640px){ .pipe{grid-template-columns:repeat(2,1fr)} .brand h1{font-size:19px} }
 </style>
 </head>
 <body>
@@ -142,8 +140,8 @@ label.f input,label.f select{font-family:inherit; font-size:14px; color:var(--in
 
   <header class="top">
     <div class="brand">
-      <h1>תמונת מצב ייצור</h1>
-      <div class="sub">תוכנית שבועית · יציקות מתוכננות מול קיבולת יומית לפי תבנית</div>
+      <h1>ניהול ייצור — תאי בקרה</h1>
+      <div class="sub">לוח סטטוס ייצור · מעקב שוחה‑שוחה מהתכנון ועד המשלוח</div>
     </div>
     <div class="head-actions">
       <span class="datasrc"><span class="dot"></span> מקור נתונים: דמו · יוחלף ב‑Priority</span>
@@ -151,240 +149,206 @@ label.f input,label.f select{font-family:inherit; font-size:14px; color:var(--in
     </div>
   </header>
 
-  <div class="kpis" id="kpis"></div>
+  <div class="pipe" id="pipe"></div>
 
   <section class="block">
-    <h2>📊 תמונת מצב — תוכנית ייצור שבוע הבא <span class="rng" id="weekRange"></span></h2>
+    <h2>🗂️ לוח סטטוס ייצור<span class="count-pill" id="boardPill">0</span></h2>
     <div class="body">
-      <div class="tbl-scroll"><table class="status" id="statusTbl"></table></div>
-      <div class="legend">
-        <span><i class="i-part"></i> מתחת לקיבולת</span>
-        <span><i class="i-full"></i> מלא</span>
-        <span><i class="i-over"></i> חריגה</span>
+      <div class="seg" id="boardFilter">
+        <button data-f="all" class="active">כל הקטרים</button>
+        <button data-f="100">קוטר 100</button>
+        <button data-f="125">קוטר 125</button>
+        <button data-f="150">קוטר 150</button>
       </div>
+      <div class="board" id="board"></div>
+      <div class="hint">כל שוחה נעה משמאל לימין דרך שלבי הייצור. לחץ על שוחה כדי לקדם אותה שלב אחד; החצים בכרטיס ההזמנה (› קדם · ‹ החזר) מזיזים את כל שוחות ההזמנה שנמצאות באותו שלב. שוחה יכולה להגיע ל"מוכן למשלוח" רק אחרי שסומנה "יוצר" — מחלקת המשלוחים רואה בעמודה זו רק מה שבאמת יוצר.</div>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2>🏭 לוח יציקה — קיבולת שבועית <span class="rng" id="weekRange"></span></h2>
+    <div class="body">
+      <div class="tbl-scroll"><div id="statusWrap"></div></div>
       <div class="note" id="statusNote"></div>
     </div>
   </section>
 
-  <section class="block">
-    <h2>📋 פירוט יציקות לכל הזמנה — לפי תבנית ויום<span class="count-pill" id="ordCount">0</span></h2>
-    <div class="body">
-      <div class="tbl-scroll"><table class="orders" id="ordersTbl"></table></div>
-      <div class="note">כל תא = כמה יציקות מההזמנה משובצות באותו יום בתבנית שלה. שוחות בקוטר 100/125 עם תחתית H ≥ 85 מנותבות אוטומטית לתבנית גרין גבוה של אותו קוטר.</div>
-    </div>
-  </section>
-
   <details class="ctl">
-    <summary>➕ הוספת הזמנה (הדגמה חיה) <span class="chev">▾</span></summary>
+    <summary>⚙️ קיבולת יומית ותקרה <span class="chev">▾</span></summary>
     <div class="body">
-      <div class="form-grid">
-        <label class="f">לקוח<input id="f_cust" placeholder="שם לקוח"></label>
-        <label class="f">קוטר<select id="f_dia"><option>100</option><option>125</option><option>150</option></select></label>
-        <label class="f">פיקס — כניסה/יציאה 180°<select id="f_pix"><option value="no">לא</option><option value="yes">כן</option></select></label>
-        <label class="f">תחתית H (ס״מ)<input id="f_bh" type="number" value="60"></label>
-        <label class="f">כמות יציקות<input id="f_qty" type="number" value="4" min="1"></label>
-      </div>
-      <div style="margin-top:12px"><button class="btn primary" id="addBtn">הוסף לתוכנית</button></div>
-      <div class="note">קדימות ניתוב: פיקס (180°) → גרין גבוה (תחתית H ≥ 85) → מסלול הקוטר הרגיל. פיקס וגרין קיימים לקוטר 100/125 בלבד.</div>
-    </div>
-  </details>
-
-  <details class="ctl">
-    <summary>⚙️ קיבולת יומית לפי תבנית <span class="chev">▾</span></summary>
-    <div class="body">
-      <div class="cap-item glob" style="margin-bottom:14px">
-        <div class="lab">תקרה יומית כוללת<small>מקסימום יציקות ליום, כל התבניות יחד</small></div>
+      <div class="cap-item glob" style="margin-top:12px">
+        <div class="lab">תקרה יומית כוללת<small>מקסימום שוחות ליום, כל התבניות יחד</small></div>
         <div class="stepper">
-          <button type="button" class="step" id="dcDec" aria-label="הפחת תקרה יומית">−</button>
-          <input class="step-val" type="number" min="1" id="dayCapInput" aria-label="תקרה יומית כוללת">
-          <button type="button" class="step" id="dcInc" aria-label="הוסף תקרה יומית">+</button>
+          <button type="button" class="step" id="dcDec" aria-label="הפחת תקרה">−</button>
+          <input class="step-val" type="number" min="1" id="dayCapInput" aria-label="תקרה יומית">
+          <button type="button" class="step" id="dcInc" aria-label="הוסף תקרה">+</button>
         </div>
       </div>
       <div class="cap-grid" id="capGrid"></div>
-      <div class="note">
-        ימי ייצור: ראשון–חמישי (שישי–שבת אינם ימי ייצור; חגים — יתווספו). יעד יומי: 30–36.<br>
-        פיקס וגרין גבוה קיימים לקטרים 100 ו‑125 בלבד. שוחת 150 משובצת תמיד במסלול 150 הרגיל.
-      </div>
-      <div style="margin-top:12px"><button class="btn ghost" id="resetBtn">איפוס לנתוני הדמו</button></div>
+      <div class="note">ימי ייצור: ראשון–חמישי · יעד יומי 30–36 · פיקס וגרין גבוה לקוטר 100/125 בלבד.</div>
+      <div style="margin-top:12px"><button class="btn ghost" id="resetBtn">איפוס נתוני הדמו וכל הסטטוסים</button></div>
     </div>
   </details>
 
   <div class="foot">
-    אב‑טיפוס להדגמה · התוכנית מחושבת ממנוע השיבוץ על נתוני דמו.<br>
-    בשלב הבא: החלפת שכבת הנתונים בלבד בקריאת Priority (OData).
+    אב‑טיפוס בהשראת מערכות MES מובילות לייצור מוצרי בטון (RIB, Elematic, Graitec) — לוח סטטוס, שער משלוח מבוקר, ומעקב פר‑שוחה.<br>
+    מבנה הנתונים תואם את גיליון התיכנון (שורה לכל שוחה). בשלב הבא: החלפת שכבת הנתונים בקריאת Priority.
   </div>
 </div>
 
 <script>
 "use strict";
-const TODAY = startOfDay(new Date());
+const TODAY=startOfDay(new Date());
 function startOfDay(d){return new Date(d.getFullYear(),d.getMonth(),d.getDate());}
 function addD(d,n){return new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);}
-function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 const DN=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+const DNS=['א','ב','ג','ד','ה','ו','ש'];
 function fmtShort(d){return d.getDate()+'/'+(d.getMonth()+1);}
 
-/* תבניות ייצור: מסלולי קוטר + גרין גבוה לפי קוטר */
-const TRACKS = {
-  d100:{name:'קוטר 100', short:'קוטר 100', cap:15, cls:''},
-  p100:{name:'פיקס 100', short:'פיקס 100', cap:2, cls:'pix'},
-  g100:{name:'גרין גבוה 100', short:'גרין 100', cap:2, cls:'green'},
-  d125:{name:'קוטר 125', short:'קוטר 125', cap:10, cls:''},
-  p125:{name:'פיקס 125', short:'פיקס 125', cap:2, cls:'pix'},
-  g125:{name:'גרין גבוה 125', short:'גרין 125', cap:2, cls:'green'},
-  d150:{name:'קוטר 150', short:'קוטר 150', cap:6, cls:''},
+const TRACKS={
+  d100:{name:'קוטר 100',short:'קוטר 100',cap:15,cls:''}, p100:{name:'פיקס 100',short:'פיקס 100',cap:2,cls:'pix'}, g100:{name:'גרין 100',short:'גרין 100',cap:2,cls:'green'},
+  d125:{name:'קוטר 125',short:'קוטר 125',cap:10,cls:''}, p125:{name:'פיקס 125',short:'פיקס 125',cap:2,cls:'pix'}, g125:{name:'גרין 125',short:'גרין 125',cap:2,cls:'green'},
+  d150:{name:'קוטר 150',short:'קוטר 150',cap:6,cls:''},
 };
 const TRACK_ORDER=['d100','p100','g100','d125','p125','g125','d150'];
-let CAP={}; TRACK_ORDER.forEach(t=>CAP[t]=TRACKS[t].cap);
-/* תקרה יומית כוללת על כל התבניות יחד (מגבלת המפעל), ויעד יומי מינימלי */
-let DAY_CAP=36; const DAY_MIN=30;
-/* קדימות שיבוץ: קודם התבניות המיוחדות (צווארי הבקבוק), אז מסלולי הקוטר */
 const TRACK_PRIO={p100:0,p125:0,g100:0,g125:0,d100:1,d125:1,d150:1};
+let CAP={}; TRACK_ORDER.forEach(t=>CAP[t]=TRACKS[t].cap);
+let DAY_CAP=36; const DAY_MIN=30;
 
-function productionDays(){ let d=new Date(TODAY); do{ d=addD(d,1); } while(d.getDay()!==0); const a=[]; for(let i=0;i<5;i++) a.push(addD(d,i)); return a; }
-let DAYS = productionDays();
+/* שלבי הסטטוס — מהתכנון ועד המשלוח */
+const STAGES=[
+  {name:'מתוכנן', cls:''},
+  {name:'יוצר', cls:'s-prod'},
+  {name:'מוכן למשלוח', cls:'s-ready'},
+  {name:'נשלח ללקוח', cls:'s-ship'},
+];
 
-/* ניתוב: פיקס (כניסה/יציאה 180°) קודם, אז גרין גבוה (תחתית H ≥ 85); שניהם רק לקוטר 100/125 */
-function routeOf(o){
-  const is1p = (o.diameter===100 || o.diameter===125);
-  if(o.hasPix && is1p) return 'p'+o.diameter;
-  if(o.bottomH>=85 && is1p) return 'g'+o.diameter;
-  return 'd'+o.diameter;
-}
+function productionDays(){ let d=new Date(TODAY); do{d=addD(d,1);}while(d.getDay()!==0); const a=[]; for(let i=0;i<5;i++)a.push(addD(d,i)); return a; }
+let DAYS=productionDays();
 
-function mockOrders(){
-  const O=(id,c,dia,bh,pix,qty)=>({id,customer:c,diameter:dia,bottomH:bh,hasPix:pix,qty,status:'approved'});
-  return [
-    // מסלולי קוטר רגילים (תחתית < 85, ללא פיקס)
-    O('SO26007001','עיריית מודיעין',100,55,false,15), O('SO26007002','מקורות',100,60,false,12), O('SO26007003','שפיר הנדסה',100,58,false,14),
-    O('SO26007004','דניה סיבוס',100,62,false,10), O('SO26007005','נתיבי ישראל',100,66,false,13), O('SO26007006','מנרב פרויקטים',100,55,false,11),
-    O('SO26007007','אשטרום',125,60,false,12), O('SO26007008','קעדאן חאלד',125,64,false,8), O('SO26007009','אלקטרה בנייה',125,58,false,10),
-    O('SO26007010','החברה למשק וכלכלה',125,70,false,11), O('SO26007011','עיריית רעננה',125,60,false,9),
-    O('SO26007012','תבל בניין',150,55,false,8), O('SO26007013','י.ד. ברזני',150,60,false,7), O('SO26007014','דניה תשתיות',150,58,false,9), O('SO26007015','ק.צ.א תשתיות',150,66,false,6),
-    // גרין גבוה (תחתית H ≥ 85)
-    O('SO26007016','שפיר גינון',100,90,false,3), O('SO26007017','אלקטרה תשתיות',100,88,false,4), O('SO26007018','מנרב מים',100,92,false,3),
-    O('SO26007019','מקורות דרום',125,90,false,4), O('SO26007020','נתיבי איילון',125,95,false,3),
-    // פיקס (כניסה/יציאה 180°)
-    O('SO26007021','עיריית אשקלון',100,58,true,4), O('SO26007022','מי שבע',100,62,true,3),
-    O('SO26007023','תשתיות נגב',125,60,true,4), O('SO26007024','עיריית הרצליה',125,64,true,3),
-  ];
-}
-// בעתיד:
-// async function fetchOrders(){ const r=await fetch('/api/priority/orders?status=approved'); return await r.json(); }
-let ORDERS = mockOrders();
-
-function schedule(){
-  const load = DAYS.map(()=>{const o={}; TRACK_ORDER.forEach(t=>o[t]=0); return o;});
-  const daySum = DAYS.map(()=>0);
-  const appr = ORDERS.filter(o=>o.status==='approved');
-  appr.forEach(o=>{ o._tr=routeOf(o); });
-  // קדימות: תבניות מיוחדות קודם; העודף נדחק למסלולי הקוטר הגמישים
-  const order=[...appr].sort((a,b)=> TRACK_PRIO[a._tr]-TRACK_PRIO[b._tr]);
-  let overflow=0;
-  order.forEach(o=>{
-    const tr=o._tr; let qty=o.qty; const placed=[];
-    for(let i=0;i<DAYS.length && qty>0;i++){
-      const trackFree = CAP[tr]-load[i][tr];
-      const dayFree = DAY_CAP-daySum[i];
-      const free=Math.min(trackFree, dayFree);
-      if(free>0){ const take=Math.min(free,qty); load[i][tr]+=take; daySum[i]+=take; qty-=take; placed.push({i,take}); }
-    }
-    o._placed=placed; o._overflow=qty; overflow+=qty;
+const ORDER_DEFS=[
+  ['SO26006901','נמר הנגב (ספיר)','SAP',100,'std',12],['SO26006902','אייל ישר (רביבים)','DAD',100,'std',10],
+  ['SO26006903','שפיר הנדסה','MSC',100,'std',12],['SO26006904','אלקטרה בנייה','MXC',100,'std',11],
+  ['SO26006905','נתיבי ישראל','MDK',100,'std',12],['SO26006906','י.ד. ברזני','DHV',100,'std',9],
+  ['SO26006907','מקורות','PNC',125,'std',12],['SO26006908','אשטרום','NDR',125,'std',10],
+  ['SO26006909','מנרב פרויקטים','HAR',125,'std',12],['SO26006910','החברה למשק וכלכלה','RAG',125,'std',10],
+  ['SO26006911','דניה תשתיות','EAE',150,'std',8],['SO26006912','ק.צ.א תשתיות','ANK',150,'std',6],
+  ['SO26006913','עיריית לוד','AQC',150,'std',6],['SO26006914','שיכון ובינוי','JDR',150,'std',6],
+  ['SO26006915','עיריית מודיעין','CAM',100,'pix',6],['SO26006916','עיריית הרצליה','CAH',125,'pix',6],
+  ['SO26006917','אשדוד תשתיות','ETC',100,'green',6],['SO26006918','דניה סיבוס','ELW',125,'green',6],
+];
+function mockData(){
+  const orders=[], shuchot=[];
+  ORDER_DEFS.forEach(([so,cust,pfx,dia,kind,cnt])=>{
+    orders.push({so,customer:cust,contractor:pfx,diameter:dia,kind,count:cnt});
+    for(let i=1;i<=cnt;i++) shuchot.push({simul:pfx+'-'+(100+i),so,customer:cust,contractor:pfx,diameter:dia,pix:kind==='pix',bottomH:kind==='green'?90:60,kind});
   });
-  return {load, daySum, appr, overflow};
+  return {orders,shuchot};
 }
+let DATA=mockData(); let ORDERS=DATA.orders; let SHUCHOT=DATA.shuchot;
+
+function routeOf(s){ const is1p=(s.diameter===100||s.diameter===125); if(s.pix&&is1p)return'p'+s.diameter; if(s.bottomH>=85&&is1p)return'g'+s.diameter; return'd'+s.diameter; }
+function schedule(){
+  const load=DAYS.map(()=>{const o={};TRACK_ORDER.forEach(t=>o[t]=0);return o;}); const daySum=DAYS.map(()=>0);
+  SHUCHOT.forEach(s=>s._tr=routeOf(s));
+  const ordered=[...SHUCHOT].sort((a,b)=>TRACK_PRIO[a._tr]-TRACK_PRIO[b._tr]); let overflow=0;
+  ordered.forEach(s=>{ const elig=[]; for(let i=0;i<DAYS.length;i++){ if(CAP[s._tr]-load[i][s._tr]>0 && DAY_CAP-daySum[i]>0) elig.push(i); }
+    if(elig.length){ elig.sort((a,b)=>daySum[a]-daySum[b]); const i=elig[0]; load[i][s._tr]++; daySum[i]++; s._day=i; } else { s._day=null; overflow++; } });
+  return {load,daySum,overflow};
+}
+
+/* סטטוס פר‑שוחה (0..3), נשמר לפי מס׳ שוחה סימול */
+let STAGE=loadStage(); let boardFilter='all';
+function loadStage(){ try{const s=localStorage.getItem('sela_stage');return s?JSON.parse(s):{};}catch(e){return {};} }
+function saveStage(){ try{localStorage.setItem('sela_stage',JSON.stringify(STAGE));}catch(e){} }
+function stageOf(sim){ return STAGE[sim]||0; }
+function setStage(sim,v){ v=Math.max(0,Math.min(3,v)); if(v===0) delete STAGE[sim]; else STAGE[sim]=v; }
 
 function render(){
   const S=schedule();
-  document.getElementById('weekRange').textContent = `(${DN[DAYS[0].getDay()]} ${fmtShort(DAYS[0])} – ${DN[DAYS[4].getDay()]} ${fmtShort(DAYS[4])})`;
+  document.getElementById('weekRange').textContent=`(${DNS[DAYS[0].getDay()]}׳ ${fmtShort(DAYS[0])} – ${DNS[DAYS[4].getDay()]}׳ ${fmtShort(DAYS[4])})`;
+  renderPipe();
+  renderBoard();
+  renderStatus(S);
+}
 
+function renderPipe(){
+  const cnt=[0,0,0,0]; SHUCHOT.forEach(s=>cnt[stageOf(s.simul)]++); const total=SHUCHOT.length||1;
+  const cls=['','s-prod','s-ready','s-ship'];
+  document.getElementById('pipe').innerHTML=STAGES.map((st,i)=>`
+    <div class="pk ${cls[i]}"><div class="n">${cnt[i]}</div><div class="l">${st.name}</div>
+      <div class="bar"><i style="width:${Math.round(cnt[i]/total*100)}%"></i></div></div>`).join('');
+  document.getElementById('boardPill').textContent=SHUCHOT.length;
+}
+
+function renderBoard(){
+  const cnt=[0,0,0,0]; SHUCHOT.forEach(s=>cnt[stageOf(s.simul)]++);
+  const pass=s=> boardFilter==='all' || s.diameter===+boardFilter;
+  let html='';
+  for(let c=0;c<4;c++){
+    const inStage=SHUCHOT.filter(s=>stageOf(s.simul)===c && pass(s));
+    let cards='';
+    ORDERS.forEach(o=>{
+      const items=inStage.filter(s=>s.so===o.so);
+      if(!items.length) return;
+      const chips=items.map(s=>`<span class="shchip ${TRACKS[s._tr].cls}" data-simul="${s.simul}" title="לחץ לקידום שלב">${s.simul}</span>`).join('');
+      const back=c>0?`<button class="mv back" data-so="${o.so}" data-stage="${c}" title="החזר שלב">‹</button>`:'';
+      const fwd=c<3?`<button class="mv fwd" data-so="${o.so}" data-stage="${c}" title="קדם הכל בשלב">›</button>`:'';
+      cards+=`<div class="ordcard"><div class="oh"><span class="so">${o.so}</span><span class="cust">${o.customer}</span><span class="mvs">${back}${fwd}</span></div><div class="chips">${chips}</div></div>`;
+    });
+    html+=`<div class="col ${STAGES[c].cls}"><div class="col-head">${STAGES[c].name}<span class="cnt">${cnt[c]}</span></div><div class="col-body">${cards||'<div class="col-empty">—</div>'}</div></div>`;
+  }
+  document.getElementById('board').innerHTML=html;
+}
+
+function renderStatus(S){
   const dayTot=S.daySum;
   const trackTot={}; TRACK_ORDER.forEach(t=>trackTot[t]=S.load.reduce((s,l)=>s+l[t],0));
   const grand=TRACK_ORDER.reduce((s,t)=>s+trackTot[t],0);
-  const weeklyCap=DAY_CAP*DAYS.length;
-  const util=weeklyCap? Math.round(grand/weeklyCap*100):0;
-
-  document.getElementById('kpis').innerHTML=[
-    kpi(S.appr.length,'הזמנות מאושרות',''),
-    kpi(grand,'סה״כ יציקות בתוכנית','mut'),
-    kpi(DAY_CAP,'תקרה יומית כוללת','mut'),
-    kpi(util+'%','ניצול מול תקרה', util>=100?'good':'mut'),
-  ].join('');
-
-  const capCell=(used,cap)=>{ let cls='part'; if(used===0)cls='empty'; else if(used>cap)cls='over'; else if(used>=cap)cls='full';
-    const sub=cls==='full'?'מלא':cls==='over'?'חריגה':cls==='empty'?'—':'פנוי '+(cap-used);
-    return `<td><span class="cap ${cls}"><span class="big">${used}/${cap}</span><span class="sub">${sub}</span></span></td>`; };
-  const totCell=(total)=>{ let cls='part'; if(total>=DAY_CAP)cls='full'; else if(total>DAY_CAP)cls='over'; else if(total<DAY_MIN)cls='low';
-    const sub=cls==='full'?'תקרה':cls==='low'?'מתחת ליעד':'בטווח';
-    return `<td class="tot"><span class="cap ${cls}"><span class="big">${total}/${DAY_CAP}</span><span class="sub">${sub}</span></span></td>`; };
-  const head=`<thead><tr><th class="day">יום ותאריך</th>${TRACK_ORDER.map(t=>`<th class="${TRACKS[t].cls==='green'?'grn':TRACKS[t].cls==='pix'?'pix':''}">${TRACKS[t].short}</th>`).join('')}<th class="tot">סה״כ / תקרה</th></tr></thead>`;
-  const rows=DAYS.map((d,i)=>`<tr><td class="day">${DN[d.getDay()]}<small>${fmtShort(d)}</small></td>${TRACK_ORDER.map(t=>capCell(S.load[i][t],CAP[t])).join('')}${totCell(dayTot[i])}</tr>`).join('');
-  const foot=`<tfoot><tr><td class="day">סה״כ שבועי</td>${TRACK_ORDER.map(t=>`<td class="num">${trackTot[t]}/${CAP[t]*DAYS.length}</td>`).join('')}<td class="num">${grand}/${weeklyCap}</td></tr></tfoot>`;
-  document.getElementById('statusTbl').innerHTML=head+'<tbody>'+rows+'</tbody>'+foot;
-
-  const belowMin=DAYS.map((_,i)=>dayTot[i]).filter(v=>v<DAY_MIN).length;
-  let note = `תקרה יומית כוללת ${DAY_CAP} יציקות (סכום קיבולות התבניות הוא ${TRACK_ORDER.reduce((s,t)=>s+CAP[t],0)}, כך שאי אפשר להריץ את כולן במקסימום יחד). קדימות: תבניות מיוחדות קודם, מסלולי הקוטר סופגים את העודף. `;
-  if(belowMin) note += `${belowMin} ימים מתחת ליעד ${DAY_MIN}. `;
-  if(S.overflow>0) note += `⚠️ ${S.overflow} יציקות חרגו מהקיבולת השבועית (${weeklyCap}) ויידחו לשבוע הבא.`;
+  const capCell=(u)=>`<td><span class="cap ${u===0?'empty':'part'}">${u||'·'}</span></td>`;
+  const totCell=(t)=>{ let cls='part'; if(t>=DAY_CAP)cls='full'; else if(t<DAY_MIN)cls='low'; const sub=cls==='full'?'תקרה':cls==='low'?'מתחת ליעד':'בטווח';
+    return `<td class="tot"><span class="cap ${cls}"><span class="big">${t}/${DAY_CAP}</span><span class="sub">${sub}</span></span></td>`; };
+  const head=`<thead><tr><th class="day">יום</th>${TRACK_ORDER.map(t=>`<th class="${TRACKS[t].cls==='green'?'grn':TRACKS[t].cls==='pix'?'pix':''}">${TRACKS[t].short}<br><small style="color:var(--muted);font-weight:400">קיב׳ ${CAP[t]}</small></th>`).join('')}<th class="tot">סה״כ/תקרה</th></tr></thead>`;
+  const rows=DAYS.map((d,i)=>`<tr><td class="day">${DN[d.getDay()]}<small>${fmtShort(d)}</small></td>${TRACK_ORDER.map(t=>capCell(S.load[i][t])).join('')}${totCell(dayTot[i])}</tr>`).join('');
+  const foot=`<tfoot><tr><td class="day">סה״כ שבועי</td>${TRACK_ORDER.map(t=>`<td>${trackTot[t]}</td>`).join('')}<td>${grand}</td></tr></tfoot>`;
+  document.getElementById('statusWrap').innerHTML=`<table class="status">${head}<tbody>${rows}</tbody>${foot}</table>`;
+  const below=dayTot.filter(v=>v<DAY_MIN).length;
+  let note=`תקרה יומית כוללת ${DAY_CAP} שוחות; קדימות לתבניות המיוחדות, והעומס מאוזן בין הימים. `;
+  if(below) note+=`${below} ימים מתחת ליעד ${DAY_MIN}. `;
+  if(S.overflow>0) note+=`⚠️ ${S.overflow} שוחות יידחו לשבוע הבא.`;
   document.getElementById('statusNote').innerHTML=note;
-
-  // per-order allocation
-  document.getElementById('ordCount').textContent=S.appr.length;
-  const th='<thead><tr><th class="oid">הזמנה</th><th>לקוח</th><th>תבנית</th>'+
-    DAYS.map(d=>`<th>${DN[d.getDay()]}<br><small style="color:var(--muted);font-weight:400">${fmtShort(d)}</small></th>`).join('')+
-    '<th class="tot">סה״כ</th></tr></thead>';
-  const tb=S.appr.map(o=>{
-    const per=DAYS.map(()=>0); o._placed.forEach(p=>per[p.i]=p.take);
-    const cells=per.map(v=>`<td class="num daycell${v?'':' zero'}">${v||'·'}</td>`).join('');
-    const M=TRACKS[o._tr];
-    const totCell = o._overflow>0? `<td class="tot num">${o.qty} <span style="color:var(--danger);font-size:11px">(+${o._overflow})</span></td>` : `<td class="tot num">${o.qty}</td>`;
-    return `<tr><td class="oid num">${o.id}</td><td>${o.customer}</td><td><span class="track-tag ${M.cls}">${M.name}</span></td>${cells}${totCell}</tr>`;
-  }).join('');
-  const ordDayTot=DAYS.map((d,i)=> S.appr.reduce((s,o)=>{const p=o._placed.find(x=>x.i===i); return s+(p?p.take:0);},0));
-  const tf='<tfoot><tr><td class="oid">סה״כ ליום</td><td></td><td></td>'+ordDayTot.map(v=>`<td class="num">${v}</td>`).join('')+`<td class="num">${grand}</td></tr></tfoot>`;
-  document.getElementById('ordersTbl').innerHTML=th+'<tbody>'+tb+'</tbody>'+tf;
 }
-function kpi(n,l,cls){ return `<div class="kpi ${cls}"><div class="n">${n}</div><div class="l">${l}</div></div>`; }
+
+document.getElementById('board').addEventListener('click',e=>{
+  const chip=e.target.closest('.shchip');
+  if(chip){ const s=chip.dataset.simul; setStage(s, stageOf(s)+1); saveStage(); render(); return; }
+  const mv=e.target.closest('.mv');
+  if(mv){ const so=mv.dataset.so, st=+mv.dataset.stage, dir=mv.classList.contains('fwd')?1:-1;
+    SHUCHOT.filter(s=>s.so===so && stageOf(s.simul)===st).forEach(s=>setStage(s.simul, st+dir));
+    saveStage(); render(); }
+});
+document.getElementById('boardFilter').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return;
+  boardFilter=b.dataset.f; document.querySelectorAll('#boardFilter button').forEach(x=>x.classList.toggle('active',x===b)); renderBoard(); });
 
 function renderCaps(){
   const g=document.getElementById('capGrid');
-  g.innerHTML=TRACK_ORDER.map(t=>{const M=TRACKS[t];
-    const cls=M.cls==='green'?'grn':M.cls==='pix'?'pix':'';
-    return `<div class="cap-item ${cls}"><div class="lab">${M.name}<small>יציקות ליום</small></div>
-      <div class="stepper">
-        <button type="button" class="step" data-tr="${t}" data-act="dec" aria-label="הפחת קיבולת ${M.name}">−</button>
-        <input class="step-val" type="number" min="1" value="${CAP[t]}" data-tr="${t}" aria-label="קיבולת ${M.name}">
-        <button type="button" class="step" data-tr="${t}" data-act="inc" aria-label="הוסף קיבולת ${M.name}">+</button>
-      </div></div>`;}).join('');
-  g.querySelectorAll('.step-val').forEach(inp=>inp.addEventListener('change',e=>{const v=parseInt(e.target.value,10); if(v>0){CAP[e.target.dataset.tr]=v; render();} else {e.target.value=CAP[e.target.dataset.tr];}}));
-  g.querySelectorAll('.step').forEach(btn=>btn.addEventListener('click',()=>{
-    const t=btn.dataset.tr; CAP[t]=Math.max(1, CAP[t]+(btn.dataset.act==='inc'?1:-1));
-    const inp=g.querySelector('.step-val[data-tr="'+t+'"]'); if(inp) inp.value=CAP[t];
-    render();
-  }));
+  g.innerHTML=TRACK_ORDER.map(t=>{const M=TRACKS[t]; const cls=M.cls==='green'?'grn':M.cls==='pix'?'pix':'';
+    return `<div class="cap-item ${cls}"><div class="lab">${M.name}<small>שוחות ליום</small></div>
+      <div class="stepper"><button type="button" class="step" data-tr="${t}" data-act="dec" aria-label="הפחת">−</button>
+      <input class="step-val" type="number" min="1" value="${CAP[t]}" data-tr="${t}" aria-label="קיבולת ${M.name}">
+      <button type="button" class="step" data-tr="${t}" data-act="inc" aria-label="הוסף">+</button></div></div>`;}).join('');
+  g.querySelectorAll('.step-val').forEach(inp=>inp.addEventListener('change',e=>{const v=parseInt(e.target.value,10); if(v>0){CAP[e.target.dataset.tr]=v; render();} else e.target.value=CAP[e.target.dataset.tr];}));
+  g.querySelectorAll('.step').forEach(btn=>btn.addEventListener('click',()=>{const t=btn.dataset.tr; CAP[t]=Math.max(1,CAP[t]+(btn.dataset.act==='inc'?1:-1)); const inp=g.querySelector('.step-val[data-tr="'+t+'"]'); if(inp)inp.value=CAP[t]; render();}));
 }
 function syncDayCap(){ const el=document.getElementById('dayCapInput'); if(el) el.value=DAY_CAP; }
-(function wireDayCap(){
-  const el=document.getElementById('dayCapInput');
-  el.addEventListener('change',e=>{const v=parseInt(e.target.value,10); if(v>0){DAY_CAP=v; render();} else {e.target.value=DAY_CAP;}});
+(function(){ const el=document.getElementById('dayCapInput');
+  el.addEventListener('change',e=>{const v=parseInt(e.target.value,10); if(v>0){DAY_CAP=v; render();} else e.target.value=DAY_CAP;});
   document.getElementById('dcInc').addEventListener('click',()=>{DAY_CAP+=1; syncDayCap(); render();});
   document.getElementById('dcDec').addEventListener('click',()=>{DAY_CAP=Math.max(1,DAY_CAP-1); syncDayCap(); render();});
 })();
-document.getElementById('addBtn').addEventListener('click',()=>{
-  const cust=(document.getElementById('f_cust').value||'לקוח חדש').trim();
-  const dia=parseInt(document.getElementById('f_dia').value,10);
-  const bh=parseInt(document.getElementById('f_bh').value,10)||0;
-  const pix=document.getElementById('f_pix').value==='yes';
-  const qty=Math.max(1,parseInt(document.getElementById('f_qty').value,10)||1);
-  ORDERS.push({id:'SO2600'+(7024+ORDERS.length-23),customer:cust,diameter:dia,bottomH:bh,hasPix:pix,qty,status:'approved'});
-  render(); document.getElementById('f_cust').value='';
-});
-document.getElementById('resetBtn').addEventListener('click',()=>{ CAP={}; TRACK_ORDER.forEach(t=>CAP[t]=TRACKS[t].cap); DAY_CAP=36; ORDERS=mockOrders(); renderCaps(); syncDayCap(); render(); });
-document.getElementById('themeBtn').addEventListener('click',()=>{
-  const cur=document.documentElement.getAttribute('data-theme');
-  const dark=cur? cur==='dark' : matchMedia('(prefers-color-scheme:dark)').matches;
-  document.documentElement.setAttribute('data-theme', dark?'light':'dark');
-});
+document.getElementById('resetBtn').addEventListener('click',()=>{ CAP={}; TRACK_ORDER.forEach(t=>CAP[t]=TRACKS[t].cap); DAY_CAP=36; STAGE={}; saveStage(); DATA=mockData(); ORDERS=DATA.orders; SHUCHOT=DATA.shuchot; renderCaps(); syncDayCap(); render(); });
+document.getElementById('themeBtn').addEventListener('click',()=>{ const cur=document.documentElement.getAttribute('data-theme'); const dark=cur?cur==='dark':matchMedia('(prefers-color-scheme:dark)').matches; document.documentElement.setAttribute('data-theme', dark?'light':'dark'); });
+
 renderCaps(); syncDayCap(); render();
 </script>
 </body>

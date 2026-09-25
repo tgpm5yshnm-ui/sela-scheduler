@@ -397,9 +397,10 @@ function schedule(){
 
 /* סטטוס פר‑שוחה (0..3) + חותמת ייצור לחישוב ייבוש */
 let STAGE=loadJSON('sela_stage'), PAT=loadJSON('sela_pat'), boardFilter='all', boardSearch='', sheetDay=0;
-const MF={q:'',dia:'',track:'',status:'',scope:'week',page:1};
-const PAGE=50;
+const MF={q:'',dia:'',track:'',status:'',scope:'recent',page:1};
+const PAGE=50; const RECENT_N=10;
 const SCOPES=[
+  {id:'recent',name:'10 הזמנות אחרונות'},
   {id:'week',  name:'השבוע'},
   {id:'prod',  name:'בייצור'},
   {id:'ready', name:'מוכן למשלוח'},
@@ -407,8 +408,11 @@ const SCOPES=[
   {id:'shipped',name:'נשלח'},
   {id:'all',   name:'כל המאגר'},
 ];
+function recentSet(){ return new Set(ORDERS.slice(-RECENT_N).map(o=>o.so)); }
+let RECENT=recentSet();
 function inScope(s,id){ const st=stageOf(s.simul);
   switch(id){
+    case 'recent': return RECENT.has(s.so);
     case 'week': return s.sched && s._day!=null;
     case 'prod': return s.sched && st===1;
     case 'ready': return s.sched && st===2;
@@ -623,7 +627,7 @@ function syncDayCap(){ const el=document.getElementById('dayCapInput'); if(el) e
   document.getElementById('dcInc').addEventListener('click',()=>{DAY_CAP+=1; syncDayCap(); render();});
   document.getElementById('dcDec').addEventListener('click',()=>{DAY_CAP=Math.max(1,DAY_CAP-1); syncDayCap(); render();});
 })();
-document.getElementById('resetBtn').addEventListener('click',()=>{ CAP={}; TRACK_ORDER.forEach(t=>CAP[t]=TRACKS[t].cap); DAY_CAP=36; STAGE={}; PAT={}; save(); DATA=mockData(); ORDERS=DATA.orders; SHUCHOT=DATA.shuchot; schedule(); seedIfEmpty(); renderCaps(); syncDayCap(); render(); });
+document.getElementById('resetBtn').addEventListener('click',()=>{ CAP={}; TRACK_ORDER.forEach(t=>CAP[t]=TRACKS[t].cap); DAY_CAP=36; STAGE={}; PAT={}; save(); DATA=mockData(); ORDERS=DATA.orders; SHUCHOT=DATA.shuchot; RECENT=recentSet(); schedule(); seedIfEmpty(); renderCaps(); syncDayCap(); render(); });
 document.getElementById('themeBtn').addEventListener('click',()=>{ const cur=document.documentElement.getAttribute('data-theme'); const dark=cur?cur==='dark':matchMedia('(prefers-color-scheme:dark)').matches; document.documentElement.setAttribute('data-theme', dark?'light':'dark'); });
 
 schedule(); seedIfEmpty(); renderCaps(); syncDayCap(); render();

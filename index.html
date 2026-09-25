@@ -51,8 +51,8 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 .btn{border:1px solid var(--line); background:var(--surface); color:var(--ink); border-radius:9px; padding:8px 12px; font-size:13.5px; font-weight:500; box-shadow:var(--shadow)}
 .btn:hover{border-color:var(--accent)} .btn.ghost{background:transparent; box-shadow:none}
+.btn.primary{background:var(--accent); color:#fff; border-color:var(--accent)}
 
-/* dashboard: pipeline */
 .pipe{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px}
 .pk{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:13px 15px; box-shadow:var(--shadow); position:relative; overflow:hidden}
 .pk::before{content:''; position:absolute; inset-inline-start:0; top:0; bottom:0; width:4px; background:var(--muted)}
@@ -70,9 +70,9 @@ section.block{background:var(--surface); border:1px solid var(--line); border-ra
 .count-pill{background:var(--surface3); color:var(--muted); font-size:12px; font-weight:600; padding:2px 9px; border-radius:999px; margin-inline-start:auto}
 .tbl-scroll{overflow-x:auto; -webkit-overflow-scrolling:touch}
 
-/* Kanban board */
-.seg{display:inline-flex; border:1px solid var(--line); border-radius:9px; overflow:hidden; margin-bottom:14px}
-.seg button{border:0; background:var(--surface); color:var(--muted); padding:8px 13px; font-size:12.5px; font-weight:500}
+.seg{display:inline-flex; flex-wrap:wrap; border:1px solid var(--line); border-radius:9px; overflow:hidden; margin-bottom:14px}
+.seg button{border:0; background:var(--surface); color:var(--muted); padding:8px 13px; font-size:12.5px; font-weight:500; border-inline-start:1px solid var(--line2)}
+.seg button:first-child{border-inline-start:0}
 .seg button.active{background:var(--accent); color:#fff}
 .board{display:flex; gap:12px; overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:6px}
 .col{flex:1 0 236px; min-width:236px; background:var(--surface2); border:1px solid var(--line); border-radius:12px; display:flex; flex-direction:column}
@@ -86,19 +86,40 @@ section.block{background:var(--surface); border:1px solid var(--line); border-ra
 .ordcard{background:var(--surface); border:1px solid var(--line); border-radius:9px; padding:8px 9px}
 .ordcard .oh{display:flex; align-items:center; gap:7px; font-size:12px; margin-bottom:6px}
 .ordcard .oh .so{font-weight:700}
-.ordcard .oh .cust{color:var(--muted); font-size:11px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:96px}
+.ordcard .oh .cust{color:var(--muted); font-size:11px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:88px}
 .mvs{margin-inline-start:auto; display:flex; gap:4px}
 .mv{width:24px; height:24px; border:1px solid var(--line); background:var(--surface); color:var(--ink); border-radius:6px; font-size:15px; font-weight:800; line-height:1; display:inline-flex; align-items:center; justify-content:center}
 .mv.fwd:hover{background:var(--ok); color:#fff; border-color:var(--ok)}
 .mv.back:hover{background:var(--surface3)}
+.cure-line{font-size:10.5px; color:var(--muted); margin-bottom:5px; display:flex; gap:8px}
+.cure-line .rd{color:var(--ok); font-weight:600} .cure-line .cr{color:var(--amber); font-weight:600}
+.demo-cure{margin-inline-start:auto; border:1px dashed var(--amber-line); background:transparent; color:var(--amber); border-radius:6px; padding:1px 6px; font-size:10px; font-weight:600}
 .chips{display:flex; flex-wrap:wrap; gap:4px}
-.shchip{font-size:11px; font-weight:600; padding:3px 7px; border-radius:6px; background:var(--surface3); color:var(--accent-ink); cursor:pointer; border:1px solid transparent; user-select:none; font-variant-numeric:tabular-nums}
+.shchip{font-size:11px; font-weight:600; padding:3px 7px; border-radius:6px; background:var(--surface3); color:var(--accent-ink); cursor:pointer; border:1.5px solid transparent; user-select:none; font-variant-numeric:tabular-nums}
 .shchip:hover{border-color:var(--accent)}
-.shchip.green{background:var(--ok-bg); color:var(--ok)}
-.shchip.pix{background:var(--violet-bg); color:var(--violet)}
+.shchip.green{background:var(--ok-bg); color:var(--ok)} .shchip.pix{background:var(--violet-bg); color:var(--violet)}
+.shchip.cured{border-color:var(--ok)} .shchip.curing{border-color:var(--amber-line)}
 .hint{color:var(--muted); font-size:12px; margin-top:10px; line-height:1.6}
 
-/* casting schedule table */
+/* daily production sheet */
+.sheet-controls{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:14px}
+.sheet-controls .seg{margin-bottom:0}
+#printSheet{background:var(--surface); border:1px solid var(--line2); border-radius:10px; padding:16px}
+.sheet-hd{display:flex; align-items:baseline; justify-content:space-between; gap:10px; flex-wrap:wrap; border-bottom:2px solid var(--ink); padding-bottom:8px; margin-bottom:12px}
+.sheet-hd .t{font-size:17px; font-weight:700}
+.sheet-hd .co{font-size:12px; color:var(--muted)}
+.tmpl-grp{margin-bottom:14px}
+.tmpl-grp h4{margin:0 0 8px; font-size:13px; font-weight:700; display:flex; align-items:center; gap:8px}
+.tmpl-grp h4 .tc{color:var(--muted); font-weight:400}
+.sheet-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(168px,1fr)); gap:8px}
+.scell{border:1px solid var(--line); border-radius:8px; padding:8px; display:flex; gap:8px; align-items:flex-start}
+.scell .sk{width:56px; height:56px; flex:0 0 56px; color:var(--ink)}
+.scell .info{font-size:11px; line-height:1.5; min-width:0}
+.scell .info .sim{font-weight:700; font-size:12.5px; font-variant-numeric:tabular-nums}
+.scell .info .mut{color:var(--muted)}
+.scell .box{margin-inline-start:auto; width:16px; height:16px; border:1.5px solid var(--muted); border-radius:3px; flex:0 0 16px}
+.sheet-empty{color:var(--muted); text-align:center; padding:16px; font-size:13px}
+
 table.status{border-collapse:collapse; width:100%; min-width:820px; font-variant-numeric:tabular-nums}
 table.status th,table.status td{padding:9px 8px; border-bottom:1px solid var(--line2); text-align:center; font-size:13px}
 table.status thead th{color:var(--muted); font-weight:500; font-size:12px; background:var(--surface2)}
@@ -121,18 +142,26 @@ details.ctl[open] summary .chev{transform:rotate(180deg)}
 .ctl .body{padding:6px 16px 16px; border-top:1px solid var(--line2)}
 .cap-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; margin-top:12px}
 .cap-item{display:flex; align-items:center; justify-content:space-between; gap:8px; background:var(--surface2); border:1px solid var(--line); border-radius:10px; padding:9px 12px}
-.cap-item .lab{font-size:13px; font-weight:500}
-.cap-item .lab small{display:block; color:var(--muted); font-weight:400; font-size:11px}
+.cap-item .lab{font-size:13px; font-weight:500} .cap-item .lab small{display:block; color:var(--muted); font-weight:400; font-size:11px}
 .cap-item.grn{border-color:var(--ok); background:var(--ok-bg)} .cap-item.pix{border-color:var(--violet); background:var(--violet-bg)}
 .cap-item.glob{border-color:var(--accent); border-width:1.5px} .cap-item.glob .lab{font-weight:700}
 .stepper{display:inline-flex; align-items:center; border:1px solid var(--line); border-radius:9px; overflow:hidden; background:var(--surface)}
 .step{width:34px; height:34px; border:0; background:var(--surface2); color:var(--ink); font-size:19px; font-weight:600; display:flex; align-items:center; justify-content:center}
 .step:hover{background:var(--accent); color:#fff}
 .step-val{width:46px; height:34px; border:0; border-inline:1px solid var(--line); background:var(--surface); color:var(--ink); text-align:center; font-family:inherit; font-size:15px; font-weight:700; font-variant-numeric:tabular-nums}
-.step-val:focus{outline:none; background:var(--surface2)}
 .note{color:var(--muted); font-size:12.5px; margin-top:10px; line-height:1.6}
 .foot{color:var(--muted); font-size:12px; text-align:center; margin-top:22px; line-height:1.7}
 @media (max-width:640px){ .pipe{grid-template-columns:repeat(2,1fr)} .brand h1{font-size:19px} }
+
+@media print{
+  body{background:#fff; color:#000}
+  .wrap>*{display:none!important}
+  #sheetBlock{display:block!important; border:0; box-shadow:none; margin:0; background:#fff}
+  #sheetBlock>h2, #sheetBlock .sheet-controls{display:none!important}
+  #sheetBlock .body{padding:0}
+  #printSheet{border:0; padding:0}
+  .scell{break-inside:avoid} .tmpl-grp{break-inside:avoid}
+}
 </style>
 </head>
 <body>
@@ -141,7 +170,7 @@ details.ctl[open] summary .chev{transform:rotate(180deg)}
   <header class="top">
     <div class="brand">
       <h1>ניהול ייצור — תאי בקרה</h1>
-      <div class="sub">לוח סטטוס ייצור · מעקב שוחה‑שוחה מהתכנון ועד המשלוח</div>
+      <div class="sub">לוח סטטוס · דף ייצור יומי עם סקיצות · מעקב שוחה‑שוחה עד המשלוח</div>
     </div>
     <div class="head-actions">
       <span class="datasrc"><span class="dot"></span> מקור נתונים: דמו · יוחלף ב‑Priority</span>
@@ -156,12 +185,22 @@ details.ctl[open] summary .chev{transform:rotate(180deg)}
     <div class="body">
       <div class="seg" id="boardFilter">
         <button data-f="all" class="active">כל הקטרים</button>
-        <button data-f="100">קוטר 100</button>
-        <button data-f="125">קוטר 125</button>
-        <button data-f="150">קוטר 150</button>
+        <button data-f="100">קוטר 100</button><button data-f="125">קוטר 125</button><button data-f="150">קוטר 150</button>
       </div>
       <div class="board" id="board"></div>
-      <div class="hint">כל שוחה נעה משמאל לימין דרך שלבי הייצור. לחץ על שוחה כדי לקדם אותה שלב אחד; החצים בכרטיס ההזמנה (› קדם · ‹ החזר) מזיזים את כל שוחות ההזמנה שנמצאות באותו שלב. שוחה יכולה להגיע ל"מוכן למשלוח" רק אחרי שסומנה "יוצר" — מחלקת המשלוחים רואה בעמודה זו רק מה שבאמת יוצר.</div>
+      <div class="hint">כל שוחה נעה שלב אחר שלב. לחיצה על שוחה מקדמת אותה; החצים בכרטיס ההזמנה מזיזים את כל שוחות ההזמנה שבאותו שלב. <b>שער ייבוש:</b> שוחה שסומנה "יוצר" עוברת ל"מוכן למשלוח" רק אחרי 3 ימי ייבוש — כך לא תישלח שוחה רטובה (בעמודת "יוצר": מסגרת ירוקה = יובשה, כתומה = בייבוש).</div>
+    </div>
+  </section>
+
+  <section class="block" id="sheetBlock">
+    <h2>🖨️ דף ייצור יומי — סקיצות מצורפות אוטומטית<span class="count-pill" id="sheetPill">0</span></h2>
+    <div class="body">
+      <div class="sheet-controls">
+        <div class="seg" id="sheetDaySeg"></div>
+        <button class="btn primary" id="printBtn">🖨️ הדפס / ייצא PDF</button>
+      </div>
+      <div id="printSheet"></div>
+      <div class="note">בחר יום → כל השוחות המשובצות אליו מופיעות לפי תבנית, עם הסקיצה של כל שוחה מצורפת אוטומטית (כאן סכמטי; מול Priority תיטען הסקיצה האמיתית מהתכנון). לחיצה אחת מדפיסה/מייצאת — במקום להעתיק מאקסל, למחוק עמודות ולצרף כל סקיצה ידנית.</div>
     </div>
   </section>
 
@@ -178,21 +217,17 @@ details.ctl[open] summary .chev{transform:rotate(180deg)}
     <div class="body">
       <div class="cap-item glob" style="margin-top:12px">
         <div class="lab">תקרה יומית כוללת<small>מקסימום שוחות ליום, כל התבניות יחד</small></div>
-        <div class="stepper">
-          <button type="button" class="step" id="dcDec" aria-label="הפחת תקרה">−</button>
-          <input class="step-val" type="number" min="1" id="dayCapInput" aria-label="תקרה יומית">
-          <button type="button" class="step" id="dcInc" aria-label="הוסף תקרה">+</button>
-        </div>
+        <div class="stepper"><button type="button" class="step" id="dcDec">−</button><input class="step-val" type="number" min="1" id="dayCapInput"><button type="button" class="step" id="dcInc">+</button></div>
       </div>
       <div class="cap-grid" id="capGrid"></div>
-      <div class="note">ימי ייצור: ראשון–חמישי · יעד יומי 30–36 · פיקס וגרין גבוה לקוטר 100/125 בלבד.</div>
+      <div class="note">ימי ייצור: ראשון–חמישי · יעד יומי 30–36 · ייבוש 3 ימים לפני משלוח · פיקס/גרין לקוטר 100/125 בלבד.</div>
       <div style="margin-top:12px"><button class="btn ghost" id="resetBtn">איפוס נתוני הדמו וכל הסטטוסים</button></div>
     </div>
   </details>
 
   <div class="foot">
-    אב‑טיפוס בהשראת מערכות MES מובילות לייצור מוצרי בטון (RIB, Elematic, Graitec) — לוח סטטוס, שער משלוח מבוקר, ומעקב פר‑שוחה.<br>
-    מבנה הנתונים תואם את גיליון התיכנון (שורה לכל שוחה). בשלב הבא: החלפת שכבת הנתונים בקריאת Priority.
+    אב‑טיפוס בהשראת מערכות MES מובילות (RIB, Elematic, Unitechnik, Vollert) — לוח סטטוס, שער משלוח וייבוש מבוקרים, ודף ייצור ללא נייר עם סקיצה שמצורפת אוטומטית לכל שוחה.<br>
+    בשלב הבא: חיבור Priority — משיכת השוחות והסקיצות האמיתיות, וסנכרון סטטוס דו‑כיווני בין המחלקות.
   </div>
 </div>
 
@@ -204,6 +239,7 @@ function addD(d,n){return new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);}
 const DN=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
 const DNS=['א','ב','ג','ד','ה','ו','ש'];
 function fmtShort(d){return d.getDate()+'/'+(d.getMonth()+1);}
+function fmtFull(d){return DN[d.getDay()]+' '+d.getDate()+'/'+(d.getMonth()+1)+'/'+String(d.getFullYear()).slice(2);}
 
 const TRACKS={
   d100:{name:'קוטר 100',short:'קוטר 100',cap:15,cls:''}, p100:{name:'פיקס 100',short:'פיקס 100',cap:2,cls:'pix'}, g100:{name:'גרין 100',short:'גרין 100',cap:2,cls:'green'},
@@ -213,15 +249,8 @@ const TRACKS={
 const TRACK_ORDER=['d100','p100','g100','d125','p125','g125','d150'];
 const TRACK_PRIO={p100:0,p125:0,g100:0,g125:0,d100:1,d125:1,d150:1};
 let CAP={}; TRACK_ORDER.forEach(t=>CAP[t]=TRACKS[t].cap);
-let DAY_CAP=36; const DAY_MIN=30;
-
-/* שלבי הסטטוס — מהתכנון ועד המשלוח */
-const STAGES=[
-  {name:'מתוכנן', cls:''},
-  {name:'יוצר', cls:'s-prod'},
-  {name:'מוכן למשלוח', cls:'s-ready'},
-  {name:'נשלח ללקוח', cls:'s-ship'},
-];
+let DAY_CAP=36; const DAY_MIN=30; const CURE_DAYS=3;
+const STAGES=[{name:'מתוכנן',cls:''},{name:'יוצר',cls:'s-prod'},{name:'מוכן למשלוח',cls:'s-ready'},{name:'נשלח ללקוח',cls:'s-ship'}];
 
 function productionDays(){ let d=new Date(TODAY); do{d=addD(d,1);}while(d.getDay()!==0); const a=[]; for(let i=0;i<5;i++)a.push(addD(d,i)); return a; }
 let DAYS=productionDays();
@@ -257,53 +286,89 @@ function schedule(){
   return {load,daySum,overflow};
 }
 
-/* סטטוס פר‑שוחה (0..3), נשמר לפי מס׳ שוחה סימול */
-let STAGE=loadStage(); let boardFilter='all';
-function loadStage(){ try{const s=localStorage.getItem('sela_stage');return s?JSON.parse(s):{};}catch(e){return {};} }
-function saveStage(){ try{localStorage.setItem('sela_stage',JSON.stringify(STAGE));}catch(e){} }
-function stageOf(sim){ return STAGE[sim]||0; }
-function setStage(sim,v){ v=Math.max(0,Math.min(3,v)); if(v===0) delete STAGE[sim]; else STAGE[sim]=v; }
+/* סטטוס פר‑שוחה (0..3) + חותמת ייצור לחישוב ייבוש */
+let STAGE=loadJSON('sela_stage'), PAT=loadJSON('sela_pat'), boardFilter='all', sheetDay=0;
+function loadJSON(k){ try{const s=localStorage.getItem(k);return s?JSON.parse(s):{};}catch(e){return {};} }
+function save(){ try{localStorage.setItem('sela_stage',JSON.stringify(STAGE));localStorage.setItem('sela_pat',JSON.stringify(PAT));}catch(e){} }
+function stageOf(s){ return STAGE[s]||0; }
+function setStage(s,v){ v=Math.max(0,Math.min(3,v)); if(v===0) delete STAGE[s]; else STAGE[s]=v; }
+function cureLeft(s){ const t=PAT[s]; if(!t) return CURE_DAYS; return Math.max(0, CURE_DAYS-Math.floor((Date.now()-t)/86400000)); }
+function cured(s){ return PAT[s] && cureLeft(s)<=0; }
+function advanceSim(s){ const c=stageOf(s);
+  if(c===0){ setStage(s,1); PAT[s]=Date.now(); return true; }
+  if(c===1){ if(!cured(s)) return false; setStage(s,2); return true; }
+  if(c===2){ setStage(s,3); return true; }
+  return false;
+}
+function retreatSim(s){ const c=stageOf(s); if(c<=0) return; setStage(s,c-1); if(c-1<1){ delete PAT[s]; } }
+function seedIfEmpty(){
+  if(Object.keys(STAGE).length) return;
+  const pick=(so,n)=>SHUCHOT.filter(s=>s.so===so).slice(0,n);
+  pick('SO26006901',99).forEach(s=>{STAGE[s.simul]=3; PAT[s.simul]=Date.now()-10*86400000;});
+  pick('SO26006902',99).forEach(s=>{STAGE[s.simul]=2; PAT[s.simul]=Date.now()-6*86400000;});
+  pick('SO26006903',8).forEach(s=>{STAGE[s.simul]=1; PAT[s.simul]=Date.now()-4*86400000;}); // יובשו
+  SHUCHOT.filter(s=>s.so==='SO26006903').slice(8).forEach(s=>{STAGE[s.simul]=1; PAT[s.simul]=Date.now()-1*86400000;}); // בייבוש
+  pick('SO26006904',5).forEach(s=>{STAGE[s.simul]=1; PAT[s.simul]=Date.now()-1*86400000;}); // בייבוש
+  save();
+}
 
 function render(){
   const S=schedule();
   document.getElementById('weekRange').textContent=`(${DNS[DAYS[0].getDay()]}׳ ${fmtShort(DAYS[0])} – ${DNS[DAYS[4].getDay()]}׳ ${fmtShort(DAYS[4])})`;
-  renderPipe();
-  renderBoard();
-  renderStatus(S);
+  renderPipe(); renderBoard(); renderSheet(); renderStatus(S);
 }
-
+function kpiPipe(){ const c=[0,0,0,0]; SHUCHOT.forEach(s=>c[stageOf(s.simul)]++); return c; }
 function renderPipe(){
-  const cnt=[0,0,0,0]; SHUCHOT.forEach(s=>cnt[stageOf(s.simul)]++); const total=SHUCHOT.length||1;
-  const cls=['','s-prod','s-ready','s-ship'];
-  document.getElementById('pipe').innerHTML=STAGES.map((st,i)=>`
-    <div class="pk ${cls[i]}"><div class="n">${cnt[i]}</div><div class="l">${st.name}</div>
-      <div class="bar"><i style="width:${Math.round(cnt[i]/total*100)}%"></i></div></div>`).join('');
+  const c=kpiPipe(), total=SHUCHOT.length||1, cls=['','s-prod','s-ready','s-ship'];
+  document.getElementById('pipe').innerHTML=STAGES.map((st,i)=>`<div class="pk ${cls[i]}"><div class="n">${c[i]}</div><div class="l">${st.name}</div><div class="bar"><i style="width:${Math.round(c[i]/total*100)}%"></i></div></div>`).join('');
   document.getElementById('boardPill').textContent=SHUCHOT.length;
 }
-
 function renderBoard(){
-  const cnt=[0,0,0,0]; SHUCHOT.forEach(s=>cnt[stageOf(s.simul)]++);
-  const pass=s=> boardFilter==='all' || s.diameter===+boardFilter;
+  const c=kpiPipe(); const pass=s=> boardFilter==='all'||s.diameter===+boardFilter;
   let html='';
-  for(let c=0;c<4;c++){
-    const inStage=SHUCHOT.filter(s=>stageOf(s.simul)===c && pass(s));
-    let cards='';
+  for(let col=0;col<4;col++){
+    const inStage=SHUCHOT.filter(s=>stageOf(s.simul)===col && pass(s)); let cards='';
     ORDERS.forEach(o=>{
-      const items=inStage.filter(s=>s.so===o.so);
-      if(!items.length) return;
-      const chips=items.map(s=>`<span class="shchip ${TRACKS[s._tr].cls}" data-simul="${s.simul}" title="לחץ לקידום שלב">${s.simul}</span>`).join('');
-      const back=c>0?`<button class="mv back" data-so="${o.so}" data-stage="${c}" title="החזר שלב">‹</button>`:'';
-      const fwd=c<3?`<button class="mv fwd" data-so="${o.so}" data-stage="${c}" title="קדם הכל בשלב">›</button>`:'';
-      cards+=`<div class="ordcard"><div class="oh"><span class="so">${o.so}</span><span class="cust">${o.customer}</span><span class="mvs">${back}${fwd}</span></div><div class="chips">${chips}</div></div>`;
+      const items=inStage.filter(s=>s.so===o.so); if(!items.length) return;
+      const chips=items.map(s=>{ let extra=''; if(col===1) extra = cured(s.simul)?' cured':' curing';
+        const title = col===1 ? (cured(s.simul)?'יובש — מוכן לקידום':('בייבוש · עוד '+cureLeft(s.simul)+' ימים')) : 'לחץ לקידום שלב';
+        return `<span class="shchip ${TRACKS[s._tr].cls}${extra}" data-simul="${s.simul}" title="${title}">${s.simul}</span>`; }).join('');
+      let cure=''; if(col===1){ const rd=items.filter(s=>cured(s.simul)).length, cr=items.length-rd;
+        cure=`<div class="cure-line">${rd?`<span class="rd">✓ ${rd} יובשו</span>`:''}${cr?`<span class="cr">⧗ ${cr} בייבוש</span>`:''}${cr?`<button class="demo-cure" data-so="${o.so}" title="סיים ייבוש (דמו)">דמו: סיים ייבוש</button>`:''}</div>`; }
+      const back=col>0?`<button class="mv back" data-so="${o.so}" data-stage="${col}" title="החזר שלב">‹</button>`:'';
+      const fwd=col<3?`<button class="mv fwd" data-so="${o.so}" data-stage="${col}" title="קדם הכל">›</button>`:'';
+      cards+=`<div class="ordcard"><div class="oh"><span class="so">${o.so}</span><span class="cust">${o.customer}</span><span class="mvs">${back}${fwd}</span></div>${cure}<div class="chips">${chips}</div></div>`;
     });
-    html+=`<div class="col ${STAGES[c].cls}"><div class="col-head">${STAGES[c].name}<span class="cnt">${cnt[c]}</span></div><div class="col-body">${cards||'<div class="col-empty">—</div>'}</div></div>`;
+    html+=`<div class="col ${STAGES[col].cls}"><div class="col-head">${STAGES[col].name}<span class="cnt">${c[col]}</span></div><div class="col-body">${cards||'<div class="col-empty">—</div>'}</div></div>`;
   }
   document.getElementById('board').innerHTML=html;
 }
 
+function hash(s){let h=7;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0;return h;}
+function genSketch(sh){
+  const n=3+(hash(sh.simul)%3), cx=54,cy=54,r=36; let g='';
+  for(let k=0;k<n;k++){ const a=(k/n)*2*Math.PI-Math.PI/2, x1=cx+Math.cos(a)*r,y1=cy+Math.sin(a)*r,x2=cx+Math.cos(a)*(r+10),y2=cy+Math.sin(a)*(r+10);
+    g+=`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="currentColor" stroke-width="2"/><rect x="${(x2-3).toFixed(1)}" y="${(y2-3).toFixed(1)}" width="6" height="6" fill="currentColor"/>`; }
+  return `<svg viewBox="0 0 108 108" class="sk" aria-hidden="true"><circle cx="54" cy="54" r="${r}" fill="none" stroke="currentColor" stroke-width="2"/>${g}<text x="54" y="59" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor">Ø${sh.diameter}</text></svg>`;
+}
+function renderSheet(){
+  document.getElementById('sheetDaySeg').innerHTML=DAYS.map((d,i)=>`<button data-d="${i}" class="${i===sheetDay?'active':''}">${DN[d.getDay()]} ${fmtShort(d)}</button>`).join('');
+  const items=SHUCHOT.filter(s=>s._day===sheetDay);
+  document.getElementById('sheetPill').textContent=items.length;
+  let groups='';
+  TRACK_ORDER.forEach(t=>{
+    const list=items.filter(s=>s._tr===t); if(!list.length) return;
+    const cells=list.map(s=>`<div class="scell">${genSketch(s)}<div class="info"><div class="sim">${s.simul}</div><div class="mut">${s.so}</div><div class="mut">${s.customer}</div><div>Ø${s.diameter} · תחתית ${s.bottomH}</div></div><div class="box" title="יוצר"></div></div>`).join('');
+    groups+=`<div class="tmpl-grp"><h4>${TRACKS[t].name}<span class="tc">· ${list.length} שוחות · קיבולת ${CAP[t]}/יום</span></h4><div class="sheet-grid">${cells}</div></div>`;
+  });
+  const d=DAYS[sheetDay];
+  document.getElementById('printSheet').innerHTML=`
+    <div class="sheet-hd"><div><div class="t">דף ייצור — ${fmtFull(d)}</div><div class="co">סלע — אספקת מוצרי בטון · ${items.length} שוחות · סמן ☐ מול כל שוחה שיוצרה</div></div><div class="co">SELA CONCRETE</div></div>
+    ${groups||'<div class="sheet-empty">אין שוחות משובצות ליום זה</div>'}`;
+}
+
 function renderStatus(S){
-  const dayTot=S.daySum;
-  const trackTot={}; TRACK_ORDER.forEach(t=>trackTot[t]=S.load.reduce((s,l)=>s+l[t],0));
+  const dayTot=S.daySum; const trackTot={}; TRACK_ORDER.forEach(t=>trackTot[t]=S.load.reduce((s,l)=>s+l[t],0));
   const grand=TRACK_ORDER.reduce((s,t)=>s+trackTot[t],0);
   const capCell=(u)=>`<td><span class="cap ${u===0?'empty':'part'}">${u||'·'}</span></td>`;
   const totCell=(t)=>{ let cls='part'; if(t>=DAY_CAP)cls='full'; else if(t<DAY_MIN)cls='low'; const sub=cls==='full'?'תקרה':cls==='low'?'מתחת ליעד':'בטווח';
@@ -312,31 +377,28 @@ function renderStatus(S){
   const rows=DAYS.map((d,i)=>`<tr><td class="day">${DN[d.getDay()]}<small>${fmtShort(d)}</small></td>${TRACK_ORDER.map(t=>capCell(S.load[i][t])).join('')}${totCell(dayTot[i])}</tr>`).join('');
   const foot=`<tfoot><tr><td class="day">סה״כ שבועי</td>${TRACK_ORDER.map(t=>`<td>${trackTot[t]}</td>`).join('')}<td>${grand}</td></tr></tfoot>`;
   document.getElementById('statusWrap').innerHTML=`<table class="status">${head}<tbody>${rows}</tbody>${foot}</table>`;
-  const below=dayTot.filter(v=>v<DAY_MIN).length;
-  let note=`תקרה יומית כוללת ${DAY_CAP} שוחות; קדימות לתבניות המיוחדות, והעומס מאוזן בין הימים. `;
-  if(below) note+=`${below} ימים מתחת ליעד ${DAY_MIN}. `;
-  if(S.overflow>0) note+=`⚠️ ${S.overflow} שוחות יידחו לשבוע הבא.`;
+  const below=dayTot.filter(v=>v<DAY_MIN).length; let note=`תקרה יומית כוללת ${DAY_CAP} שוחות; קדימות לתבניות המיוחדות, עומס מאוזן בין הימים. `;
+  if(below) note+=`${below} ימים מתחת ליעד ${DAY_MIN}. `; if(S.overflow>0) note+=`⚠️ ${S.overflow} שוחות יידחו לשבוע הבא.`;
   document.getElementById('statusNote').innerHTML=note;
 }
 
 document.getElementById('board').addEventListener('click',e=>{
+  const dc=e.target.closest('.demo-cure');
+  if(dc){ SHUCHOT.filter(s=>s.so===dc.dataset.so && stageOf(s.simul)===1 && !cured(s.simul)).forEach(s=>PAT[s.simul]=Date.now()-CURE_DAYS*86400000-1000); save(); render(); return; }
   const chip=e.target.closest('.shchip');
-  if(chip){ const s=chip.dataset.simul; setStage(s, stageOf(s)+1); saveStage(); render(); return; }
+  if(chip){ if(advanceSim(chip.dataset.simul)!==false){ save(); render(); } return; }
   const mv=e.target.closest('.mv');
-  if(mv){ const so=mv.dataset.so, st=+mv.dataset.stage, dir=mv.classList.contains('fwd')?1:-1;
-    SHUCHOT.filter(s=>s.so===so && stageOf(s.simul)===st).forEach(s=>setStage(s.simul, st+dir));
-    saveStage(); render(); }
+  if(mv){ const so=mv.dataset.so, st=+mv.dataset.stage, fwd=mv.classList.contains('fwd');
+    SHUCHOT.filter(s=>s.so===so && stageOf(s.simul)===st).forEach(s=> fwd?advanceSim(s.simul):retreatSim(s.simul)); save(); render(); }
 });
-document.getElementById('boardFilter').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return;
-  boardFilter=b.dataset.f; document.querySelectorAll('#boardFilter button').forEach(x=>x.classList.toggle('active',x===b)); renderBoard(); });
+document.getElementById('boardFilter').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return; boardFilter=b.dataset.f; document.querySelectorAll('#boardFilter button').forEach(x=>x.classList.toggle('active',x===b)); renderBoard(); });
+document.getElementById('sheetDaySeg').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return; sheetDay=+b.dataset.d; renderSheet(); });
+document.getElementById('printBtn').addEventListener('click',()=>window.print());
 
 function renderCaps(){
   const g=document.getElementById('capGrid');
   g.innerHTML=TRACK_ORDER.map(t=>{const M=TRACKS[t]; const cls=M.cls==='green'?'grn':M.cls==='pix'?'pix':'';
-    return `<div class="cap-item ${cls}"><div class="lab">${M.name}<small>שוחות ליום</small></div>
-      <div class="stepper"><button type="button" class="step" data-tr="${t}" data-act="dec" aria-label="הפחת">−</button>
-      <input class="step-val" type="number" min="1" value="${CAP[t]}" data-tr="${t}" aria-label="קיבולת ${M.name}">
-      <button type="button" class="step" data-tr="${t}" data-act="inc" aria-label="הוסף">+</button></div></div>`;}).join('');
+    return `<div class="cap-item ${cls}"><div class="lab">${M.name}<small>שוחות ליום</small></div><div class="stepper"><button type="button" class="step" data-tr="${t}" data-act="dec">−</button><input class="step-val" type="number" min="1" value="${CAP[t]}" data-tr="${t}" aria-label="קיבולת ${M.name}"><button type="button" class="step" data-tr="${t}" data-act="inc">+</button></div></div>`;}).join('');
   g.querySelectorAll('.step-val').forEach(inp=>inp.addEventListener('change',e=>{const v=parseInt(e.target.value,10); if(v>0){CAP[e.target.dataset.tr]=v; render();} else e.target.value=CAP[e.target.dataset.tr];}));
   g.querySelectorAll('.step').forEach(btn=>btn.addEventListener('click',()=>{const t=btn.dataset.tr; CAP[t]=Math.max(1,CAP[t]+(btn.dataset.act==='inc'?1:-1)); const inp=g.querySelector('.step-val[data-tr="'+t+'"]'); if(inp)inp.value=CAP[t]; render();}));
 }
@@ -346,10 +408,10 @@ function syncDayCap(){ const el=document.getElementById('dayCapInput'); if(el) e
   document.getElementById('dcInc').addEventListener('click',()=>{DAY_CAP+=1; syncDayCap(); render();});
   document.getElementById('dcDec').addEventListener('click',()=>{DAY_CAP=Math.max(1,DAY_CAP-1); syncDayCap(); render();});
 })();
-document.getElementById('resetBtn').addEventListener('click',()=>{ CAP={}; TRACK_ORDER.forEach(t=>CAP[t]=TRACKS[t].cap); DAY_CAP=36; STAGE={}; saveStage(); DATA=mockData(); ORDERS=DATA.orders; SHUCHOT=DATA.shuchot; renderCaps(); syncDayCap(); render(); });
+document.getElementById('resetBtn').addEventListener('click',()=>{ CAP={}; TRACK_ORDER.forEach(t=>CAP[t]=TRACKS[t].cap); DAY_CAP=36; STAGE={}; PAT={}; save(); DATA=mockData(); ORDERS=DATA.orders; SHUCHOT=DATA.shuchot; schedule(); seedIfEmpty(); renderCaps(); syncDayCap(); render(); });
 document.getElementById('themeBtn').addEventListener('click',()=>{ const cur=document.documentElement.getAttribute('data-theme'); const dark=cur?cur==='dark':matchMedia('(prefers-color-scheme:dark)').matches; document.documentElement.setAttribute('data-theme', dark?'light':'dark'); });
 
-renderCaps(); syncDayCap(); render();
+schedule(); seedIfEmpty(); renderCaps(); syncDayCap(); render();
 </script>
 </body>
 </html>

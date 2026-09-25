@@ -431,7 +431,7 @@ let STAGE=loadJSON('sela_stage'), PAT=loadJSON('sela_pat'), boardFilter='all', b
 const MF={q:'',dia:'',track:'',status:'',scope:'recent',page:1};
 const PAGE=50; const RECENT_N=10; let ovOffset=0;
 const SCOPES=[
-  {id:'recent',name:'10 הזמנות אחרונות'},
+  {id:'recent',name:'10 שוחות אחרונות'},
   {id:'week',  name:'השבוע'},
   {id:'prod',  name:'בייצור'},
   {id:'ready', name:'מוכן למשלוח'},
@@ -439,11 +439,11 @@ const SCOPES=[
   {id:'shipped',name:'נשלח'},
   {id:'all',   name:'כל המאגר'},
 ];
-function recentSet(){ return new Set(ORDERS.slice(-RECENT_N).map(o=>o.so)); }
+function recentSet(){ return new Set(SHUCHOT.slice(-RECENT_N).map(s=>s.simul)); }
 let RECENT=recentSet();
 function inScope(s,id){ const st=stageOf(s.simul);
   switch(id){
-    case 'recent': return RECENT.has(s.so);
+    case 'recent': return RECENT.has(s.simul);
     case 'week': return s.sched && s._day!=null;
     case 'prod': return s.sched && st===1;
     case 'ready': return s.sched && st===2;

@@ -100,6 +100,18 @@ section.block{background:var(--surface); border:1px solid var(--line); border-ra
 .shchip.green{background:var(--ok-bg); color:var(--ok)} .shchip.pix{background:var(--violet-bg); color:var(--violet)}
 .shchip.cured{border-color:var(--ok)} .shchip.curing{border-color:var(--amber-line)}
 .hint{color:var(--muted); font-size:12px; margin-top:10px; line-height:1.6}
+.board-search{display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap}
+.board-search .sw{position:relative; flex:1 1 280px; min-width:0}
+.board-search .sw .ic{position:absolute; inset-inline-start:11px; top:50%; transform:translateY(-50%); font-size:13px; opacity:.55; pointer-events:none}
+.board-search input{width:100%; font-family:inherit; font-size:14px; color:var(--ink); background:var(--surface2); border:1px solid var(--line); border-radius:9px; padding:9px 34px 9px 12px}
+.board-search input:focus{outline:2px solid var(--accent); outline-offset:1px; background:var(--surface)}
+.board-search .clr{border:1px solid var(--line); background:var(--surface); color:var(--muted); border-radius:8px; width:34px; height:34px; font-size:16px; line-height:1; display:none}
+.board-search .clr.show{display:inline-flex; align-items:center; justify-content:center}
+.search-info{font-size:12.5px; color:var(--muted); font-weight:500; white-space:nowrap}
+.search-info b{color:var(--accent-ink)}
+.shchip mark{background:var(--amber-bg); color:var(--amber); border-radius:3px; padding:0 1px}
+.shchip.hit{outline:2px solid var(--accent); outline-offset:1px}
+.no-results{flex:1; text-align:center; color:var(--muted); font-size:13.5px; padding:26px 12px; border:1px dashed var(--line); border-radius:12px; background:var(--surface2)}
 
 /* daily production sheet */
 .sheet-controls{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:14px}
@@ -183,6 +195,14 @@ details.ctl[open] summary .chev{transform:rotate(180deg)}
   <section class="block">
     <h2>🗂️ לוח סטטוס ייצור<span class="count-pill" id="boardPill">0</span></h2>
     <div class="body">
+      <div class="board-search">
+        <div class="sw">
+          <span class="ic">🔎</span>
+          <input id="boardSearch" type="search" inputmode="search" placeholder="חיפוש שוחה בדיווח — מס׳ שוחה סימול, הזמנה או לקוח…" aria-label="חיפוש שוחה">
+        </div>
+        <button class="clr" id="boardSearchClr" aria-label="נקה חיפוש">✕</button>
+        <span class="search-info" id="searchInfo"></span>
+      </div>
       <div class="seg" id="boardFilter">
         <button data-f="all" class="active">כל הקטרים</button>
         <button data-f="100">קוטר 100</button><button data-f="125">קוטר 125</button><button data-f="150">קוטר 150</button>
@@ -287,7 +307,7 @@ function schedule(){
 }
 
 /* סטטוס פר‑שוחה (0..3) + חותמת ייצור לחישוב ייבוש */
-let STAGE=loadJSON('sela_stage'), PAT=loadJSON('sela_pat'), boardFilter='all', sheetDay=0;
+let STAGE=loadJSON('sela_stage'), PAT=loadJSON('sela_pat'), boardFilter='all', boardSearch='', sheetDay=0;
 function loadJSON(k){ try{const s=localStorage.getItem(k);return s?JSON.parse(s):{};}catch(e){return {};} }
 function save(){ try{localStorage.setItem('sela_stage',JSON.stringify(STAGE));localStorage.setItem('sela_pat',JSON.stringify(PAT));}catch(e){} }
 function stageOf(s){ return STAGE[s]||0; }
@@ -323,16 +343,27 @@ function renderPipe(){
   document.getElementById('pipe').innerHTML=STAGES.map((st,i)=>`<div class="pk ${cls[i]}"><div class="n">${c[i]}</div><div class="l">${st.name}</div><div class="bar"><i style="width:${Math.round(c[i]/total*100)}%"></i></div></div>`).join('');
   document.getElementById('boardPill').textContent=SHUCHOT.length;
 }
+function hl(text,q){ if(!q) return text; const i=text.toLowerCase().indexOf(q); if(i<0) return text;
+  return text.slice(0,i)+'<mark>'+text.slice(i,i+q.length)+'</mark>'+text.slice(i+q.length); }
 function renderBoard(){
-  const c=kpiPipe(); const pass=s=> boardFilter==='all'||s.diameter===+boardFilter;
+  const c=kpiPipe();
+  const q=boardSearch.trim().toLowerCase();
+  const matches=s=> !q || s.simul.toLowerCase().includes(q) || s.so.toLowerCase().includes(q) || s.customer.toLowerCase().includes(q);
+  const pass=s=> (boardFilter==='all'||s.diameter===+boardFilter) && matches(s);
+  // search info
+  const info=document.getElementById('searchInfo');
+  if(q){ const n=SHUCHOT.filter(s=>(boardFilter==='all'||s.diameter===+boardFilter)&&matches(s)).length;
+    info.innerHTML=`נמצאו <b>${n}</b> שוחות`; document.getElementById('boardSearchClr').classList.add('show'); }
+  else { info.textContent=''; document.getElementById('boardSearchClr').classList.remove('show'); }
   let html='';
   for(let col=0;col<4;col++){
     const inStage=SHUCHOT.filter(s=>stageOf(s.simul)===col && pass(s)); let cards='';
     ORDERS.forEach(o=>{
       const items=inStage.filter(s=>s.so===o.so); if(!items.length) return;
       const chips=items.map(s=>{ let extra=''; if(col===1) extra = cured(s.simul)?' cured':' curing';
+        const isHit = q && s.simul.toLowerCase().includes(q);
         const title = col===1 ? (cured(s.simul)?'יובש — מוכן לקידום':('בייבוש · עוד '+cureLeft(s.simul)+' ימים')) : 'לחץ לקידום שלב';
-        return `<span class="shchip ${TRACKS[s._tr].cls}${extra}" data-simul="${s.simul}" title="${title}">${s.simul}</span>`; }).join('');
+        return `<span class="shchip ${TRACKS[s._tr].cls}${extra}${isHit?' hit':''}" data-simul="${s.simul}" title="${title}">${hl(s.simul,q)}</span>`; }).join('');
       let cure=''; if(col===1){ const rd=items.filter(s=>cured(s.simul)).length, cr=items.length-rd;
         cure=`<div class="cure-line">${rd?`<span class="rd">✓ ${rd} יובשו</span>`:''}${cr?`<span class="cr">⧗ ${cr} בייבוש</span>`:''}${cr?`<button class="demo-cure" data-so="${o.so}" title="סיים ייבוש (דמו)">דמו: סיים ייבוש</button>`:''}</div>`; }
       const back=col>0?`<button class="mv back" data-so="${o.so}" data-stage="${col}" title="החזר שלב">‹</button>`:'';
@@ -341,7 +372,10 @@ function renderBoard(){
     });
     html+=`<div class="col ${STAGES[col].cls}"><div class="col-head">${STAGES[col].name}<span class="cnt">${c[col]}</span></div><div class="col-body">${cards||'<div class="col-empty">—</div>'}</div></div>`;
   }
-  document.getElementById('board').innerHTML=html;
+  const totalHits=q ? SHUCHOT.filter(s=>(boardFilter==='all'||s.diameter===+boardFilter)&&matches(s)).length : 1;
+  document.getElementById('board').innerHTML = totalHits===0
+    ? `<div class="no-results">לא נמצאה שוחה התואמת ל‑"${boardSearch.trim()}". בדוק את מס׳ השוחה סימול, מספר ההזמנה או שם הלקוח.</div>`
+    : html;
 }
 
 function hash(s){let h=7;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0;return h;}
@@ -392,6 +426,8 @@ document.getElementById('board').addEventListener('click',e=>{
     SHUCHOT.filter(s=>s.so===so && stageOf(s.simul)===st).forEach(s=> fwd?advanceSim(s.simul):retreatSim(s.simul)); save(); render(); }
 });
 document.getElementById('boardFilter').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return; boardFilter=b.dataset.f; document.querySelectorAll('#boardFilter button').forEach(x=>x.classList.toggle('active',x===b)); renderBoard(); });
+document.getElementById('boardSearch').addEventListener('input',e=>{ boardSearch=e.target.value; renderBoard(); });
+document.getElementById('boardSearchClr').addEventListener('click',()=>{ boardSearch=''; const el=document.getElementById('boardSearch'); el.value=''; el.focus(); renderBoard(); });
 document.getElementById('sheetDaySeg').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return; sheetDay=+b.dataset.d; renderSheet(); });
 document.getElementById('printBtn').addEventListener('click',()=>window.print());
 

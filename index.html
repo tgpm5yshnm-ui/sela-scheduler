@@ -94,6 +94,16 @@ table.master tr.hit td{background:var(--amber-bg)} table.master tr.hit:hover td{
 .dtag{font-size:11.5px; font-variant-numeric:tabular-nums} .dtag.late{color:var(--danger); font-weight:700} .dtag.warn{color:var(--amber); font-weight:600}
 .mtrk{font-size:11px; font-weight:600; padding:2px 7px; border-radius:6px; background:var(--surface3); color:var(--accent-ink)}
 .mtrk.green{background:var(--ok-bg); color:var(--ok)} .mtrk.pix{background:var(--violet-bg); color:var(--violet)}
+.pstat{font-size:11px; font-weight:600; padding:2px 8px; border-radius:6px; white-space:nowrap; background:var(--surface3); color:var(--muted)}
+.pstat.appr{background:var(--ok-bg); color:var(--ok)}
+.pstat.prod{background:var(--amber-bg); color:var(--amber)}
+.pstat.done{background:var(--accent); color:#fff}
+.pstat.pre{background:var(--surface3); color:var(--muted)}
+.pstat.hold{background:var(--amber-bg); color:var(--amber)}
+.pstat.dead{background:var(--danger-bg); color:var(--danger)}
+.stpill.muted{background:transparent; color:var(--muted)}
+table.master tr.excl td{opacity:.62}
+.mchk.lock{border:0; background:transparent; cursor:default; font-size:13px; opacity:.7}
 section.block{background:var(--surface); border:1px solid var(--line); border-radius:14px; margin-bottom:18px; overflow:hidden; box-shadow:var(--shadow)}
 .block > h2{font-size:15px; font-weight:600; margin:0; padding:14px 16px; border-bottom:1px solid var(--line2); display:flex; align-items:center; gap:9px; flex-wrap:wrap}
 .block > h2 .rng{color:var(--muted); font-weight:400; font-size:13px}
@@ -234,6 +244,7 @@ details.ctl[open] summary .chev{transform:rotate(180deg)}
         </div>
         <select id="fDia" class="fsel" aria-label="סינון קוטר"><option value="">כל הקטרים</option><option value="100">קוטר 100</option><option value="125">קוטר 125</option><option value="150">קוטר 150</option></select>
         <select id="fTrack" class="fsel" aria-label="סינון תבנית"></select>
+        <select id="fStatus" class="fsel" aria-label="סינון סטטוס Priority"></select>
         <button class="btn ghost" id="fClear">נקה</button>
       </div>
       <div class="tbl-scroll"><table class="master" id="masterTbl"></table></div>
@@ -321,6 +332,23 @@ let CAP={}; TRACK_ORDER.forEach(t=>CAP[t]=TRACKS[t].cap);
 let DAY_CAP=36; const DAY_MIN=30; const CURE_DAYS=3;
 const STAGES=[{name:'מתוכנן',cls:''},{name:'יוצר',cls:'s-prod'},{name:'מוכן למשלוח',cls:'s-ready'},{name:'נשלח ללקוח',cls:'s-ship'}];
 
+/* סטטוסי Priority האמיתיים — מקור האמת ללחיצת ההזמנה. sched=נכנס לשיבוץ */
+const PSTATUS={
+  'טיוטא':        {sched:false, cls:'pre',  reason:'טיוטא — טרם אושר'},
+  'ממתין ללקוח':  {sched:false, cls:'pre',  reason:'ממתין לאישור לקוח'},
+  'לאישור אובליגו':{sched:false, cls:'pre', reason:'ממתין לאישור אשראי'},
+  'אושר מהלקוח':  {sched:true,  cls:'appr'},
+  'בתהליך יצור':  {sched:true,  cls:'prod'},
+  'בייצור בלבד':  {sched:true,  cls:'prod'},
+  'יוצר ובאספקה': {sched:true,  cls:'done'},
+  'יוצר וט.סופק': {sched:true,  cls:'done'},
+  'בוצעה':        {sched:true,  cls:'done'},
+  'מבוטלת':       {sched:false, cls:'dead', reason:'הזמנה מבוטלת'},
+  'מוקפאת':       {sched:false, cls:'hold', reason:'הזמנה מוקפאת'},
+  'מוקפאת-יצור':  {sched:false, cls:'hold', reason:'ייצור מוקפא'},
+};
+const STATUS_LIST=Object.keys(PSTATUS);
+
 function productionDays(){ let d=new Date(TODAY); do{d=addD(d,1);}while(d.getDay()!==0); const a=[]; for(let i=0;i<5;i++)a.push(addD(d,i)); return a; }
 let DAYS=productionDays();
 
@@ -339,24 +367,29 @@ function isBiz(d){const g=d.getDay();return g!==5&&g!==6;}
 function addBiz(d,n){let r=new Date(d),l=Math.abs(n),s=n<0?-1:1;while(l>0){r=addD(r,s);if(isBiz(r))l--;}return r;}
 function hashN(str){let h=7;for(let i=0;i<str.length;i++)h=(h*31+str.charCodeAt(i))>>>0;return h;}
 const MKT={100:'12100010',125:'12125008',150:'12150012'};
+// סטטוס Priority לכל הזמנה בדמו — רובן פעילות, וכמה מוחרגות כדי להדגים את השער
+const DEMO_STATUS=['בתהליך יצור','אושר מהלקוח','בתהליך יצור','אושר מהלקוח','בייצור בלבד','ממתין ללקוח','אושר מהלקוח','בתהליך יצור','אושר מהלקוח','מוקפאת','אושר מהלקוח','בייצור בלבד','מבוטלת','טיוטא','אושר מהלקוח','בתהליך יצור','אושר מהלקוח','בתהליך יצור'];
 function mockData(){
   const orders=[], shuchot=[];
-  ORDER_DEFS.forEach(([so,cust,pfx,dia,kind,cnt])=>{
+  ORDER_DEFS.forEach(([so,cust,pfx,dia,kind,cnt],idx)=>{
     const apprBack=2+(hashN(so)%9);                 // אישור תכנון: 2–10 ימי עסקים אחורה
     const approval=addBiz(TODAY,-apprBack);
     const delivery=addBiz(approval,14);             // נוהל: אספקה 14 ימי עסקים מאישור התכנון
-    orders.push({so,customer:cust,contractor:pfx,diameter:dia,kind,count:cnt,approval,delivery});
-    for(let i=1;i<=cnt;i++) shuchot.push({simul:pfx+'-'+(100+i),so,customer:cust,contractor:pfx,diameter:dia,pix:kind==='pix',bottomH:kind==='green'?90:60,kind,mkt:MKT[dia],approval,delivery});
+    const pstatus=DEMO_STATUS[idx]||'אושר מהלקוח';
+    const sched=PSTATUS[pstatus].sched;
+    orders.push({so,customer:cust,contractor:pfx,diameter:dia,kind,count:cnt,approval,delivery,pstatus,sched});
+    for(let i=1;i<=cnt;i++) shuchot.push({simul:pfx+'-'+(100+i),so,customer:cust,contractor:pfx,diameter:dia,pix:kind==='pix',bottomH:kind==='green'?90:60,kind,mkt:MKT[dia],approval,delivery,pstatus,sched});
   });
   return {orders,shuchot};
 }
+function activeShuchot(){ return SHUCHOT.filter(s=>s.sched); }
 let DATA=mockData(); let ORDERS=DATA.orders; let SHUCHOT=DATA.shuchot;
 
 function routeOf(s){ const is1p=(s.diameter===100||s.diameter===125); if(s.pix&&is1p)return'p'+s.diameter; if(s.bottomH>=85&&is1p)return'g'+s.diameter; return'd'+s.diameter; }
 function schedule(){
   const load=DAYS.map(()=>{const o={};TRACK_ORDER.forEach(t=>o[t]=0);return o;}); const daySum=DAYS.map(()=>0);
-  SHUCHOT.forEach(s=>s._tr=routeOf(s));
-  const ordered=[...SHUCHOT].sort((a,b)=>TRACK_PRIO[a._tr]-TRACK_PRIO[b._tr]); let overflow=0;
+  SHUCHOT.forEach(s=>{ s._tr=routeOf(s); s._day=null; });   // לא‑מאושרות לא משובצות
+  const ordered=SHUCHOT.filter(s=>s.sched).sort((a,b)=>TRACK_PRIO[a._tr]-TRACK_PRIO[b._tr]); let overflow=0;
   ordered.forEach(s=>{ const elig=[]; for(let i=0;i<DAYS.length;i++){ if(CAP[s._tr]-load[i][s._tr]>0 && DAY_CAP-daySum[i]>0) elig.push(i); }
     if(elig.length){ elig.sort((a,b)=>daySum[a]-daySum[b]); const i=elig[0]; load[i][s._tr]++; daySum[i]++; s._day=i; } else { s._day=null; overflow++; } });
   return {load,daySum,overflow};
@@ -364,7 +397,7 @@ function schedule(){
 
 /* סטטוס פר‑שוחה (0..3) + חותמת ייצור לחישוב ייבוש */
 let STAGE=loadJSON('sela_stage'), PAT=loadJSON('sela_pat'), boardFilter='all', boardSearch='', sheetDay=0;
-const MF={q:'',dia:'',track:'',scope:'week',page:1};
+const MF={q:'',dia:'',track:'',status:'',scope:'week',page:1};
 const PAGE=50;
 const SCOPES=[
   {id:'week',  name:'השבוע'},
@@ -376,11 +409,11 @@ const SCOPES=[
 ];
 function inScope(s,id){ const st=stageOf(s.simul);
   switch(id){
-    case 'week': return s._day!=null;
-    case 'prod': return st===1;
-    case 'ready': return st===2;
-    case 'late': return st<3 && s.delivery<TODAY;
-    case 'shipped': return st===3;
+    case 'week': return s.sched && s._day!=null;
+    case 'prod': return s.sched && st===1;
+    case 'ready': return s.sched && st===2;
+    case 'late': return s.sched && st<3 && s.delivery<TODAY;
+    case 'shipped': return s.sched && st===3;
     default: return true;
   }
 }
@@ -413,11 +446,11 @@ function render(){
   document.getElementById('weekRange').textContent=`(${DNS[DAYS[0].getDay()]}׳ ${fmtShort(DAYS[0])} – ${DNS[DAYS[4].getDay()]}׳ ${fmtShort(DAYS[4])})`;
   renderPipe(); renderMaster(); renderBoard(); renderSheet(); renderStatus(S);
 }
-function kpiPipe(){ const c=[0,0,0,0]; SHUCHOT.forEach(s=>c[stageOf(s.simul)]++); return c; }
+function kpiPipe(){ const c=[0,0,0,0]; activeShuchot().forEach(s=>c[stageOf(s.simul)]++); return c; }
 function renderPipe(){
-  const c=kpiPipe(), total=SHUCHOT.length||1, cls=['','s-prod','s-ready','s-ship'];
+  const c=kpiPipe(), total=activeShuchot().length||1, cls=['','s-prod','s-ready','s-ship'];
   document.getElementById('pipe').innerHTML=STAGES.map((st,i)=>`<div class="pk ${cls[i]}"><div class="n">${c[i]}</div><div class="l">${st.name}</div><div class="bar"><i style="width:${Math.round(c[i]/total*100)}%"></i></div></div>`).join('');
-  document.getElementById('boardPill').textContent=SHUCHOT.length;
+  document.getElementById('boardPill').textContent=activeShuchot().length;
 }
 function hl(text,q){ if(!q) return text; const i=text.toLowerCase().indexOf(q); if(i<0) return text;
   return text.slice(0,i)+'<mark>'+text.slice(i,i+q.length)+'</mark>'+text.slice(i+q.length); }
@@ -425,6 +458,8 @@ function hl(text,q){ if(!q) return text; const i=text.toLowerCase().indexOf(q); 
 function renderMaster(){
   const tf=document.getElementById('fTrack');
   if(tf && tf.options.length<=1){ tf.innerHTML='<option value="">כל התבניות</option>'+TRACK_ORDER.map(t=>`<option value="${t}">${TRACKS[t].name}</option>`).join(''); }
+  const sf=document.getElementById('fStatus');
+  if(sf && sf.options.length<=1){ sf.innerHTML='<option value="">כל סטטוסי Priority</option>'+STATUS_LIST.map(s=>`<option value="${s}">${s}</option>`).join(''); }
 
   const q=MF.q.trim().toLowerCase();
   const searching = q.length>0;
@@ -432,7 +467,7 @@ function renderMaster(){
   const inView=s=> searching ? true : inScope(s, MF.scope);
   const match=s=> inView(s)
     && (!q || s.simul.toLowerCase().includes(q) || s.so.toLowerCase().includes(q) || s.customer.toLowerCase().includes(q))
-    && (!MF.dia || s.diameter===+MF.dia) && (!MF.track || s._tr===MF.track);
+    && (!MF.dia || s.diameter===+MF.dia) && (!MF.track || s._tr===MF.track) && (!MF.status || s.pstatus===MF.status);
 
   // scope tabs with live counts
   document.getElementById('scopeTabs').innerHTML = SCOPES.map(sc=>{
@@ -444,24 +479,28 @@ function renderMaster(){
   const all=SHUCHOT.filter(match);
   const shown=all.slice(0, MF.page*PAGE);
   const stName=['מתוכנן','יוצר','מוכן למשלוח','נשלח'];
-  const th='<thead><tr><th>יוצר</th><th>מס׳ שוחה סימול</th><th>הזמנה</th><th>לקוח</th><th>קוטר</th><th>תבנית</th><th>תאריך יציקה</th><th>סטטוס</th><th>אישור תכנון</th><th>תאריך אספקה</th></tr></thead>';
+  const th='<thead><tr><th>יוצר</th><th>מס׳ שוחה סימול</th><th>הזמנה</th><th>לקוח</th><th>קוטר</th><th>תבנית</th><th>סטטוס Priority</th><th>שלב ייצור</th><th>תאריך יציקה</th><th>תאריך אספקה</th></tr></thead>';
   const body=shown.map(s=>{
-    const st=stageOf(s.simul), on=st>=1, M=TRACKS[s._tr];
+    const st=stageOf(s.simul), on=st>=1, M=TRACKS[s._tr], PS=PSTATUS[s.pstatus];
     const cast = s._day!=null ? fmtShort(DAYS[s._day]) : '—';
-    const late = st<3 && s.delivery < TODAY, warn = st<3 && !late && s.delivery <= addD(TODAY,3);
+    const late = s.sched && st<3 && s.delivery < TODAY, warn = s.sched && st<3 && !late && s.delivery <= addD(TODAY,3);
     const dcls = late?'late':warn?'warn':'';
     const isHit=q && s.simul.toLowerCase().includes(q);
-    return `<tr class="${isHit?'hit':''}">
-      <td><button type="button" class="mchk ${on?'on':''}" data-simul="${s.simul}" aria-pressed="${on}" aria-label="סמן ${s.simul} כיוצר">✓</button></td>
+    const chk = s.sched
+      ? `<button type="button" class="mchk ${on?'on':''}" data-simul="${s.simul}" aria-pressed="${on}" aria-label="סמן ${s.simul} כיוצר">✓</button>`
+      : `<span class="mchk lock" title="${PS.reason||'לא בשיבוץ'}">🔒</span>`;
+    const stageCell = s.sched ? `<span class="stpill s${st}">${stName[st]}</span>` : '<span class="stpill muted">—</span>';
+    return `<tr class="${isHit?'hit':''}${s.sched?'':' excl'}">
+      <td>${chk}</td>
       <td class="sim">${hl(s.simul,q)}</td>
       <td>${hl(s.so,q)}</td>
       <td>${s.customer}</td>
       <td>${s.diameter}</td>
       <td><span class="mtrk ${M.cls}">${M.name}</span></td>
+      <td><span class="pstat ${PS.cls}">${s.pstatus}</span></td>
+      <td>${stageCell}</td>
       <td>${cast}</td>
-      <td><span class="stpill s${st}">${stName[st]}</span></td>
-      <td>${fmtShort(s.approval)}</td>
-      <td class="dtag ${dcls}">${fmtShort(s.delivery)}${late?' ⚠️':''}</td></tr>`;
+      <td class="dtag ${dcls}">${s.sched?fmtShort(s.delivery)+(late?' ⚠️':''):'—'}</td></tr>`;
   }).join('');
   document.getElementById('masterTbl').innerHTML=th+'<tbody>'+(body||'<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:16px">אין שוחות בתצוגה זו</td></tr>')+'</tbody>';
   document.getElementById('masterPill').textContent=all.length;
@@ -482,12 +521,12 @@ function renderBoard(){
   const pass=s=> (boardFilter==='all'||s.diameter===+boardFilter) && matches(s);
   // search info
   const info=document.getElementById('searchInfo');
-  if(q){ const n=SHUCHOT.filter(s=>(boardFilter==='all'||s.diameter===+boardFilter)&&matches(s)).length;
+  if(q){ const n=activeShuchot().filter(s=>(boardFilter==='all'||s.diameter===+boardFilter)&&matches(s)).length;
     info.innerHTML=`נמצאו <b>${n}</b> שוחות`; document.getElementById('boardSearchClr').classList.add('show'); }
   else { info.textContent=''; document.getElementById('boardSearchClr').classList.remove('show'); }
   let html='';
   for(let col=0;col<4;col++){
-    const inStage=SHUCHOT.filter(s=>stageOf(s.simul)===col && pass(s)); let cards='';
+    const inStage=activeShuchot().filter(s=>stageOf(s.simul)===col && pass(s)); let cards='';
     ORDERS.forEach(o=>{
       const items=inStage.filter(s=>s.so===o.so); if(!items.length) return;
       const chips=items.map(s=>{ let extra=''; if(col===1) extra = cured(s.simul)?' cured':' curing';
@@ -502,7 +541,7 @@ function renderBoard(){
     });
     html+=`<div class="col ${STAGES[col].cls}"><div class="col-head">${STAGES[col].name}<span class="cnt">${c[col]}</span></div><div class="col-body">${cards||'<div class="col-empty">—</div>'}</div></div>`;
   }
-  const totalHits=q ? SHUCHOT.filter(s=>(boardFilter==='all'||s.diameter===+boardFilter)&&matches(s)).length : 1;
+  const totalHits=q ? activeShuchot().filter(s=>(boardFilter==='all'||s.diameter===+boardFilter)&&matches(s)).length : 1;
   document.getElementById('board').innerHTML = totalHits===0
     ? `<div class="no-results">לא נמצאה שוחה התואמת ל‑"${boardSearch.trim()}". בדוק את מס׳ השוחה סימול, מספר ההזמנה או שם הלקוח.</div>`
     : html;
@@ -552,9 +591,10 @@ document.getElementById('scopeTabs').addEventListener('click',e=>{ const b=e.tar
 document.getElementById('masterSearch').addEventListener('input',e=>{ MF.q=e.target.value; MF.page=1; renderMaster(); });
 document.getElementById('fDia').addEventListener('change',e=>{ MF.dia=e.target.value; MF.page=1; renderMaster(); });
 document.getElementById('fTrack').addEventListener('change',e=>{ MF.track=e.target.value; MF.page=1; renderMaster(); });
+document.getElementById('fStatus').addEventListener('change',e=>{ MF.status=e.target.value; MF.page=1; renderMaster(); });
 document.getElementById('loadMore').addEventListener('click',()=>{ MF.page++; renderMaster(); });
-document.getElementById('fClear').addEventListener('click',()=>{ MF.q='';MF.dia='';MF.track='';MF.page=1;
-  document.getElementById('masterSearch').value=''; ['fDia','fTrack'].forEach(id=>document.getElementById(id).value=''); renderMaster(); });
+document.getElementById('fClear').addEventListener('click',()=>{ MF.q='';MF.dia='';MF.track='';MF.status='';MF.page=1;
+  document.getElementById('masterSearch').value=''; ['fDia','fTrack','fStatus'].forEach(id=>document.getElementById(id).value=''); renderMaster(); });
 document.getElementById('board').addEventListener('click',e=>{
   const dc=e.target.closest('.demo-cure');
   if(dc){ SHUCHOT.filter(s=>s.so===dc.dataset.so && stageOf(s.simul)===1 && !cured(s.simul)).forEach(s=>PAT[s.simul]=Date.now()-CURE_DAYS*86400000-1000); save(); render(); return; }
